@@ -43,22 +43,21 @@
   <style>
     body {
       font-family: 'Inter', sans-serif;
-      background-color: #0f172a;
-      color: #f8fafc;
+      transition: background-color 0.2s ease, color 0.2s ease;
     }
     .custom-scrollbar::-webkit-scrollbar {
       width: 6px;
       height: 6px;
     }
     .custom-scrollbar::-webkit-scrollbar-track {
-      background: #1e293b;
+      background: rgba(148, 163, 184, 0.1);
     }
     .custom-scrollbar::-webkit-scrollbar-thumb {
-      background: #475569;
+      background: rgba(148, 163, 184, 0.4);
       border-radius: 4px;
     }
     .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-      background: #64748b;
+      background: rgba(148, 163, 184, 0.6);
     }
     .badge-pulse {
       animation: pulse-glow 2s infinite;
@@ -68,10 +67,20 @@
       50% { opacity: 0.75; transform: scale(1.03); }
     }
   </style>
+  <script>
+    (function() {
+      const savedTheme = localStorage.getItem('ianr1_theme') || 'dark';
+      if (savedTheme === 'dark') {
+        document.documentElement.classList.add('dark');
+      } else {
+        document.documentElement.classList.remove('dark');
+      }
+    })();
+  </script>
 </head>
-<body class="min-h-screen bg-slate-950 text-slate-100 flex flex-col antialiased selection:bg-amber-500 selection:text-slate-950">
+<body class="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-100 flex flex-col antialiased selection:bg-amber-500 selection:text-slate-950">
 
-  <header class="border-b border-slate-800 bg-slate-900/90 backdrop-blur sticky top-0 z-40">
+  <header class="border-b border-slate-200 dark:border-slate-800 bg-white/95 dark:bg-slate-900/90 backdrop-blur sticky top-0 z-40 transition-colors">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
       <div class="flex items-center gap-3">
         <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-500 to-yellow-600 flex items-center justify-center shadow-lg shadow-amber-500/20 text-slate-950 font-black text-xl">
@@ -79,18 +88,22 @@
         </div>
         <div>
           <div class="flex items-center gap-2">
-            <span class="font-bold text-lg text-white tracking-tight">IAN-R1 Regulator</span>
-            <span class="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">LO-MME-013-2025-M2</span>
+            <span class="font-bold text-lg text-slate-900 dark:text-white tracking-tight">IAN-R1 Regulator</span>
+            <span class="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30">LO-MME-013-2025-M2</span>
           </div>
-          <p class="text-xs text-slate-400">Control de Comunicaciones y Compromisos Regulatorios (MME - SGC)</p>
+          <p class="text-xs text-slate-500 dark:text-slate-400">Control de Comunicaciones y Compromisos Regulatorios (MME - SGC)</p>
         </div>
       </div>
 
       <div class="flex items-center gap-3">
         <div class="hidden md:flex flex-col text-right">
-          <span class="text-xs text-slate-400 font-medium">Vigencia Licencia: <strong class="text-amber-400 font-mono">23-Jul-2030</strong></span>
-          <span id="countdownLicense" class="text-[11px] font-mono text-emerald-400">Calculando plazo...</span>
+          <span class="text-xs text-slate-500 dark:text-slate-400 font-medium">Vigencia Licencia: <strong class="text-amber-600 dark:text-amber-400 font-mono">23-Jul-2030</strong></span>
+          <span id="countdownLicense" class="text-[11px] font-mono text-emerald-600 dark:text-emerald-400">Calculando plazo...</span>
         </div>
+        <button id="themeToggleBtn" onclick="toggleTheme()" class="bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-700 font-semibold px-3 py-2 rounded-lg text-xs transition flex items-center gap-1.5 shadow-sm" title="Alternar modo claro / oscuro">
+          <span id="themeToggleIcon">☀️</span>
+          <span id="themeToggleText" class="hidden sm:inline">Modo Día</span>
+        </button>
         <button onclick="openModalNewComm()" class="bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold px-3.5 py-2 rounded-lg text-xs transition flex items-center gap-2 shadow-md hover:shadow-amber-500/25">
           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
           Nueva Comunicación
@@ -98,23 +111,23 @@
       </div>
     </div>
 
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex space-x-1 border-t border-slate-800/60 overflow-x-auto text-xs font-semibold">
-      <button onclick="switchTab('dashboard')" id="tabBtn-dashboard" class="px-4 py-2.5 border-b-2 border-amber-500 text-amber-400 flex items-center gap-2 transition">
-        <span>📊 Panel de Control</span>
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex space-x-1 border-t border-slate-200 dark:border-slate-800/60 overflow-x-auto text-xs font-semibold">
+      <button onclick="switchTab('dashboard')" id="tabBtn-dashboard" class="px-4 py-2.5 border-b-2 border-amber-500 text-amber-600 dark:text-amber-400 flex items-center gap-2 transition">
+        <span>📊 Resúmenes & KPIs</span>
       </button>
-      <button onclick="switchTab('communications')" id="tabBtn-communications" class="px-4 py-2.5 border-b-2 border-transparent text-slate-400 hover:text-slate-200 flex items-center gap-2 transition">
+      <button onclick="switchTab('communications')" id="tabBtn-communications" class="px-4 py-2.5 border-b-2 border-transparent text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 flex items-center gap-2 transition">
         <span>📬 Histórico Comunicaciones</span>
-        <span id="countCommBadge" class="bg-slate-800 px-1.5 py-0.5 rounded-full text-[10px] text-slate-300">0</span>
+        <span id="countCommBadge" class="bg-slate-200 dark:bg-slate-800 px-1.5 py-0.5 rounded-full text-[10px] text-slate-700 dark:text-slate-300">0</span>
       </button>
-      <button onclick="switchTab('actions')" id="tabBtn-actions" class="px-4 py-2.5 border-b-2 border-transparent text-slate-400 hover:text-slate-200 flex items-center gap-2 transition">
+      <button onclick="switchTab('actions')" id="tabBtn-actions" class="px-4 py-2.5 border-b-2 border-transparent text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 flex items-center gap-2 transition">
         <span>📋 Actuaciones Técnicas</span>
-        <span id="countPendingBadge" class="bg-rose-500/20 text-rose-400 px-1.5 py-0.5 rounded-full text-[10px] border border-rose-500/30">0</span>
+        <span id="countPendingBadge" class="bg-rose-500/20 text-rose-600 dark:text-rose-400 px-1.5 py-0.5 rounded-full text-[10px] border border-rose-500/30">0</span>
       </button>
-      <button onclick="switchTab('regulatory')" id="tabBtn-regulatory" class="px-4 py-2.5 border-b-2 border-transparent text-slate-400 hover:text-slate-200 flex items-center gap-2 transition">
+      <button onclick="switchTab('regulatory')" id="tabBtn-regulatory" class="px-4 py-2.5 border-b-2 border-transparent text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 flex items-center gap-2 transition">
         <span>⏱ Ciclos Periódicos (Res. 18-1475)</span>
       </button>
-      <button onclick="switchTab('analyzer')" id="tabBtn-analyzer" class="px-4 py-2.5 border-b-2 border-transparent text-slate-400 hover:text-slate-200 flex items-center gap-2 transition">
-        <span>🧠 Evaluador y Redactor IA (Gemini)</span>
+      <button onclick="switchTab('analyzer')" id="tabBtn-analyzer" class="px-4 py-2.5 border-b-2 border-transparent text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 flex items-center gap-2 transition">
+        <span>🧠 Evaluador y Redactor IA</span>
       </button>
     </div>
   </header>
@@ -125,134 +138,227 @@
     <!-- TAB 1: DASHBOARD -->
     <!-- ========================================================================= -->
     <section id="tab-dashboard" class="space-y-6">
+
+      <!-- Encabezado del Módulo Ejecutivo -->
+      <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 p-5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-sm transition-colors">
+        <div>
+          <div class="flex items-center gap-2">
+            <span class="p-1 rounded-md bg-amber-500/10 text-amber-600 dark:text-amber-400 font-bold text-xs">MÓDULO DE CONTROL</span>
+            <h1 class="text-lg font-bold text-slate-900 dark:text-white tracking-tight">Tablero Ejecutivo y Resumen de KPIs Regulatorios</h1>
+          </div>
+          <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">Diagnóstico en tiempo real para el Reactor Nuclear IAN-R1 bajo la Licencia LO-MME-013-2025-M2 y la Resolución 18-1475/2004.</p>
+        </div>
+        <div class="flex flex-wrap items-center gap-2">
+          <button onclick="generateExecutiveSummaryWithAI()" class="bg-purple-900/10 dark:bg-purple-900/30 hover:bg-purple-900/20 dark:hover:bg-purple-900/50 text-purple-700 dark:text-purple-300 border border-purple-500/30 px-3.5 py-2 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition">
+            <span>✨ Síntesis Ejecutiva con IA</span>
+          </button>
+          <button onclick="copyKpiSummary()" class="bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-700 px-3.5 py-2 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition">
+            <span id="kpiCopyIcon">📋</span>
+            <span id="kpiCopyText">Copiar Ficha KPIs</span>
+          </button>
+        </div>
+      </div>
       
-      <!-- Banner de Alertas Críticas Regulatorias -->
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <!-- Cuadrícula Principal de 4 KPIs Estratégicos -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         
-        <!-- Vencimiento Licencia -->
-        <div class="bg-slate-900/80 border border-slate-800 rounded-xl p-4 relative overflow-hidden flex flex-col justify-between">
-          <div class="absolute -right-4 -bottom-4 text-slate-800/30 text-8xl font-black select-none pointer-events-none">2030</div>
+        <!-- KPI 1: Índice Global de Cumplimiento -->
+        <div class="bg-white dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800 rounded-xl p-4.5 shadow-sm transition flex flex-col justify-between">
           <div>
-            <div class="flex items-center justify-between text-xs text-slate-400 mb-1">
-              <span class="uppercase tracking-wider font-semibold">Licencia LO-MME-013-2025-M2</span>
-              <span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-amber-500/10 text-amber-400 border border-amber-500/30">Vigente</span>
+            <div class="flex items-center justify-between text-xs text-slate-500 dark:text-slate-400">
+              <span class="font-semibold uppercase tracking-wider text-[10px]">Cumplimiento Regulatorio</span>
+              <span id="statComplianceTag" class="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30">Al Día</span>
             </div>
-            <div class="text-2xl font-black text-white mt-1">23 de Julio de 2030</div>
-            <p class="text-xs text-slate-400 mt-1">Límite obligatorio para radicar renovación: <strong>23 de Enero de 2030</strong> (6 meses antes conforme al Art. 49, Res. 18-1475).</p>
+            <div class="mt-2 flex items-baseline gap-2">
+              <span id="statCompliancePercent" class="text-3xl font-black font-mono text-slate-900 dark:text-white tabular-nums">100%</span>
+              <span class="text-xs text-slate-500 dark:text-slate-400">compromisos</span>
+            </div>
+            <div class="w-full bg-slate-100 dark:bg-slate-800 rounded-full h-2 mt-3 overflow-hidden">
+              <div id="statComplianceBar" class="bg-emerald-500 h-2 rounded-full transition-all duration-500" style="width: 100%"></div>
+            </div>
           </div>
-          <div class="mt-4 pt-3 border-t border-slate-800 text-[11px] text-amber-300/80 flex items-center gap-1.5 font-mono">
-            <span>⚠ Alerta: Renovación requiere mínimo 6 meses de anticipación.</span>
+          <div class="mt-4 pt-3 border-t border-slate-100 dark:border-slate-800/80 text-[11px] text-slate-500 dark:text-slate-400 flex items-center justify-between">
+            <span id="statComplianceDetail">0 completadas / 0 totales</span>
+            <span class="text-emerald-600 dark:text-emerald-400 font-semibold font-mono">Meta: 100%</span>
           </div>
         </div>
 
-        <!-- Próxima Inspección Semestral MME -->
-        <div class="bg-slate-900/80 border border-slate-800 rounded-xl p-4 relative overflow-hidden flex flex-col justify-between">
+        <!-- KPI 2: Compromisos Técnicos Pendientes -->
+        <div class="bg-white dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800 rounded-xl p-4.5 shadow-sm transition flex flex-col justify-between">
           <div>
-            <div class="flex items-center justify-between text-xs text-slate-400 mb-1">
-              <span class="uppercase tracking-wider font-semibold">Inspecciones MME (Art. 46)</span>
-              <span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">Semestral</span>
+            <div class="flex items-center justify-between text-xs text-slate-500 dark:text-slate-400">
+              <span class="font-semibold uppercase tracking-wider text-[10px]">Actuaciones Pendientes</span>
+              <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/30">Críticas</span>
             </div>
-            <div class="text-2xl font-black text-white mt-1" id="dashNextInspectionDate">Semestre II - 2026</div>
-            <p class="text-xs text-slate-400 mt-1">Mandato de inspección cada seis (6) meses por la Autoridad Reguladora (Capítulo IX, Res. 18-1475).</p>
+            <div class="mt-2 flex items-baseline gap-2">
+              <span id="kpiPendingCount" class="text-3xl font-black font-mono text-rose-600 dark:text-rose-400 tabular-nums">0</span>
+              <span class="text-xs text-slate-500 dark:text-slate-400">abiertas</span>
+            </div>
+            <div class="mt-3 flex items-center gap-1.5 text-[11px] font-mono text-slate-600 dark:text-slate-300">
+              <span class="px-1.5 py-0.5 rounded bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/20">Alta: <strong id="kpiHighCount">0</strong></span>
+              <span class="px-1.5 py-0.5 rounded bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20">Media: <strong id="kpiMedCount">0</strong></span>
+              <span class="px-1.5 py-0.5 rounded bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/20">Baja: <strong id="kpiLowCount">0</strong></span>
+            </div>
           </div>
-          <div class="mt-4 pt-3 border-t border-slate-800 text-[11px] text-emerald-300/80 flex items-center gap-1.5 font-mono">
-            <span>🛡 Mantener al día: SAR, Libro de Operación, Dosimetría y EPP.</span>
+          <div class="mt-4 pt-3 border-t border-slate-100 dark:border-slate-800/80 text-[11px] text-slate-500 dark:text-slate-400 truncate" id="kpiNextDeadlineText">
+            Próximo plazo: Por definir
           </div>
         </div>
 
-        <!-- Informes Obligatorios -->
-        <div class="bg-slate-900/80 border border-slate-800 rounded-xl p-4 relative overflow-hidden flex flex-col justify-between">
+        <!-- KPI 3: Flujo de Comunicaciones Radicadas -->
+        <div class="bg-white dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800 rounded-xl p-4.5 shadow-sm transition flex flex-col justify-between">
           <div>
-            <div class="flex items-center justify-between text-xs text-slate-400 mb-1">
-              <span class="uppercase tracking-wider font-semibold">Próximo Reporte Obligatorio</span>
-              <span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-blue-500/10 text-blue-400 border border-blue-500/30">Art. 21</span>
+            <div class="flex items-center justify-between text-xs text-slate-500 dark:text-slate-400">
+              <span class="font-semibold uppercase tracking-wider text-[10px]">Trazabilidad MME ⇄ SGC</span>
+              <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/30">Radicados</span>
             </div>
-            <div class="text-2xl font-black text-white mt-1" id="dashNextReportName">Informe Anual 2026</div>
-            <p class="text-xs text-slate-400 mt-1">Plazo de entrega: <strong class="text-slate-200" id="dashNextReportDeadline">Enero 2027</strong> (primeros 15 días hábiles).</p>
+            <div class="mt-2 flex items-baseline gap-2">
+              <span id="kpiTotalComm" class="text-3xl font-black font-mono text-slate-900 dark:text-white tabular-nums">0</span>
+              <span class="text-xs text-slate-500 dark:text-slate-400">oficios oficiales</span>
+            </div>
+            <div class="mt-3 flex items-center justify-between text-[11px] font-mono text-slate-600 dark:text-slate-400">
+              <span>📥 Entrada: <strong id="kpiInboundComm" class="text-slate-900 dark:text-slate-200">0</strong></span>
+              <span>📤 Salida: <strong id="kpiOutboundComm" class="text-slate-900 dark:text-slate-200">0</strong></span>
+            </div>
           </div>
-          <div class="mt-4 pt-3 border-t border-slate-800 text-[11px] text-blue-300/80 flex items-center gap-1.5 font-mono">
-            <span>📄 Incluir: Envejecimiento, Comités de Seguridad y Dosis.</span>
+          <div class="mt-4 pt-3 border-t border-slate-100 dark:border-slate-800/80 text-[11px] text-slate-500 dark:text-slate-400 flex items-center justify-between">
+            <span>Tasa resolución:</span>
+            <span id="kpiClosedRate" class="font-mono font-semibold text-slate-800 dark:text-slate-200">0%</span>
+          </div>
+        </div>
+
+        <!-- KPI 4: Término de Licencia LO-MME-013-2025-M2 -->
+        <div class="bg-white dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800 rounded-xl p-4.5 shadow-sm transition flex flex-col justify-between">
+          <div>
+            <div class="flex items-center justify-between text-xs text-slate-500 dark:text-slate-400">
+              <span class="font-semibold uppercase tracking-wider text-[10px]">Vigencia Quinquenal</span>
+              <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/30">2025 - 2030</span>
+            </div>
+            <div class="mt-2">
+              <div class="text-xl font-black text-slate-900 dark:text-white">23-Jul-2030</div>
+              <div id="kpiLicenseCountdown" class="text-xs font-mono text-amber-600 dark:text-amber-400 font-semibold mt-0.5">Calculando plazo...</div>
+            </div>
+            <div class="w-full bg-slate-100 dark:bg-slate-800 rounded-full h-2 mt-3 overflow-hidden">
+              <div id="kpiLicenseTimelineBar" class="bg-amber-500 h-2 rounded-full transition-all duration-500" style="width: 25%"></div>
+            </div>
+          </div>
+          <div class="mt-4 pt-3 border-t border-slate-100 dark:border-slate-800/80 text-[11px] text-amber-600 dark:text-amber-400/90 font-mono truncate">
+            ⚠ Radicar renovación: 23-Ene-2030
           </div>
         </div>
 
       </div>
 
-      <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <div class="bg-slate-900/50 border border-slate-800/80 rounded-xl p-4">
-          <span class="text-xs text-slate-400">Total Comunicaciones</span>
-          <div class="text-2xl font-bold font-mono mt-1 text-white" id="statTotalComm">0</div>
-        </div>
-        <div class="bg-slate-900/50 border border-slate-800/80 rounded-xl p-4">
-          <span class="text-xs text-slate-400">Actuaciones Pendientes</span>
-          <div class="text-2xl font-bold font-mono mt-1 text-rose-400" id="statPendingActions">0</div>
-        </div>
-        <div class="bg-slate-900/50 border border-slate-800/80 rounded-xl p-4">
-          <span class="text-xs text-slate-400">Docs. / Instructivos Afectados</span>
-          <div class="text-2xl font-bold font-mono mt-1 text-amber-400" id="statDocsAffected">0</div>
-        </div>
-        <div class="bg-slate-900/50 border border-slate-800/80 rounded-xl p-4">
-          <span class="text-xs text-slate-400">Compromisos Completados</span>
-          <div class="text-2xl font-bold font-mono mt-1 text-emerald-400" id="statCompletedActions">0</div>
-        </div>
-      </div>
-
-      <!-- Paneles de Actuaciones Inmediatas Requeridas -->
+      <!-- Módulo Central de Resumen Ejecutivo y Diagnóstico Operativo -->
       <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
         
-        <!-- Lista de Actuaciones Pendientes Críticas -->
-        <div class="lg:col-span-2 bg-slate-900/70 border border-slate-800 rounded-xl p-5 space-y-4">
-          <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+        <!-- Ficha de Síntesis Ejecutiva -->
+        <div class="lg:col-span-2 bg-white dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 space-y-4 shadow-sm transition">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-100 dark:border-slate-800 pb-3">
             <div>
-              <h2 class="font-bold text-sm text-slate-100 flex items-center gap-2">
-                <span class="w-2.5 h-2.5 rounded-full bg-rose-500 animate-ping"></span>
-                Actuaciones Técnicas y Documentales Pendientes de la Instalación
+              <h2 class="font-bold text-sm text-slate-900 dark:text-white flex items-center gap-2">
+                <span class="text-base">📋</span>
+                Ficha de Resumen Ejecutivo del Reactor IAN-R1
               </h2>
-              <p class="text-xs text-slate-400">Requerimientos derivados de comunicaciones oficiales pendientes de envío o ejecución.</p>
+              <p class="text-xs text-slate-500 dark:text-slate-400">Estado operativo y consolidado de compromisos con el Ministerio de Minas y Energía</p>
             </div>
-            <button onclick="switchTab('actions')" class="text-xs text-amber-400 hover:text-amber-300 font-semibold underline">Ver todas</button>
+            <button onclick="copyExecutiveSummaryText()" class="text-xs px-2.5 py-1 rounded bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-semibold flex items-center gap-1 transition">
+              <span>📋 Copiar Minuta</span>
+            </button>
           </div>
 
-          <div id="dashboardPendingList" class="space-y-3">
-            <!-- Dynamic pending items loaded here -->
+          <!-- Diagnóstico Dinámico -->
+          <div class="p-4 bg-slate-50 dark:bg-slate-950/70 rounded-xl border border-slate-200 dark:border-slate-800/80 space-y-3">
+            <div class="flex items-center justify-between">
+              <span class="text-[11px] font-bold text-amber-600 dark:text-amber-400 uppercase tracking-wider flex items-center gap-1.5">
+                <span>⚡</span> Diagnóstico Regulatorio Oficial
+              </span>
+              <span class="text-[10px] font-mono text-slate-500">Actualizado automáticamente</span>
+            </div>
+            <div id="aiExecutiveSummaryText" class="text-xs text-slate-700 dark:text-slate-300 leading-relaxed font-sans space-y-2">
+              <p><strong>Licencia de Operación:</strong> La instalación cuenta con la Licencia <strong>LO-MME-013-2025-M2</strong> vigente del 24 de julio de 2025 al 23 de julio de 2030. Modificación M2 protocolizada garantizando la independencia funcional de la Oficial de Protección Radiológica (Andrea Sánchez Galindo) respecto al laboratorio LAAN.</p>
+              <p><strong>Puntos Críticos en Atención:</strong> 1) Se mantiene suspendida la puesta en servicio del detector de aerosoles hasta la entrega por el proveedor de fuentes exentas de Sr-90 y Am-241 de geometría compatible para calibración in situ (Art. 49-50, Res. 18-1434). 2) Se adelanta la estandarización del control de acceso digital QR en el instructivo IN-TNU-MRN-016 y formatos asociados.</p>
+            </div>
           </div>
-        </div>
 
-        <!-- Personal Acreditado LO-MME-013-2025-M2 -->
-        <div class="bg-slate-900/70 border border-slate-800 rounded-xl p-5 space-y-4">
-          <div class="border-b border-slate-800 pb-3">
-            <h3 class="font-bold text-sm text-slate-100 flex items-center gap-2">
-              <span>👤</span> Personal Clave Autorizado
-            </h3>
-            <p class="text-xs text-slate-400">Verificado bajo Licencia LO-MME-013-2025-M2</p>
-          </div>
-
-          <div class="space-y-3 text-xs">
-            <div class="p-3 bg-slate-950/70 rounded-lg border border-slate-800">
-              <span class="text-[10px] text-amber-400 font-semibold uppercase tracking-wider block">Responsable Directo / Titular</span>
-              <div class="font-bold text-slate-200 mt-0.5">Jimmy Alejandro Muñoz Rocha</div>
-              <p class="text-[11px] text-slate-400">Director Técnico de Asuntos Nucleares (SGC)</p>
+          <!-- Puntos Clave de Cumplimiento -->
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
+            <div class="p-3 bg-slate-50 dark:bg-slate-950/50 rounded-xl border border-slate-200 dark:border-slate-800">
+              <span class="text-[10px] text-emerald-600 dark:text-emerald-400 font-bold uppercase block">Protección Radiológica</span>
+              <div class="font-bold text-slate-800 dark:text-slate-200 mt-1">OPR Titular Acreditada</div>
+              <p class="text-[11px] text-slate-500 mt-0.5">Control dosimétrico mensual y verificación de zonas al día.</p>
             </div>
-
-            <div class="p-3 bg-slate-950/70 rounded-lg border border-slate-800">
-              <span class="text-[10px] text-emerald-400 font-semibold uppercase tracking-wider block">Oficial de Protección Radiológica (OPR)</span>
-              <div class="font-bold text-slate-200 mt-0.5">Andrea Sánchez Galindo</div>
-              <p class="text-[11px] text-slate-400">C.C. 35.536.683 • Control Dosimétrico y Zonas</p>
+            <div class="p-3 bg-slate-50 dark:bg-slate-950/50 rounded-xl border border-slate-200 dark:border-slate-800">
+              <span class="text-[10px] text-amber-600 dark:text-amber-400 font-bold uppercase block">Próxima Inspección</span>
+              <div class="font-bold text-slate-800 dark:text-slate-200 mt-1" id="dashNextInspectionDate">Semestre II - 2026</div>
+              <p class="text-[11px] text-slate-500 mt-0.5">Visita periódica semestral del MME (Art. 46, Res. 18-1475).</p>
             </div>
-
-            <div class="p-3 bg-slate-950/70 rounded-lg border border-slate-800">
-              <span class="text-[10px] text-blue-400 font-semibold uppercase tracking-wider block">Supervisor y Coordinador Reactor</span>
-              <div class="font-bold text-slate-200 mt-0.5">Edgar Mauricio López Rodríguez</div>
-              <p class="text-[11px] text-slate-400">Habilitado MME 2-2025-031979</p>
-            </div>
-
-            <div class="p-3 bg-slate-950/70 rounded-lg border border-slate-800">
-              <span class="text-[10px] text-purple-400 font-semibold uppercase tracking-wider block">Autoridad Reguladora (MME)</span>
-              <div class="font-bold text-slate-200 mt-0.5">Juan Pablo Parra Lozano</div>
-              <p class="text-[11px] text-slate-400">Coordinador Grupo de Asuntos Nucleares</p>
+            <div class="p-3 bg-slate-50 dark:bg-slate-950/50 rounded-xl border border-slate-200 dark:border-slate-800">
+              <span class="text-[10px] text-blue-600 dark:text-blue-400 font-bold uppercase block">Informe Mandatorio</span>
+              <div class="font-bold text-slate-800 dark:text-slate-200 mt-1" id="dashNextReportName">Informe Anual 2026</div>
+              <p class="text-[11px] text-slate-500 mt-0.5">Primeros 15 días hábiles de Enero 2027 (Art. 21).</p>
             </div>
           </div>
         </div>
 
+        <!-- Columna Lateral: Distribución por Responsable y Documentos -->
+        <div class="space-y-6">
+          
+          <!-- Carga de Trabajo por Responsable -->
+          <div class="bg-white dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 space-y-4 shadow-sm transition">
+            <div class="border-b border-slate-100 dark:border-slate-800 pb-2">
+              <h3 class="font-bold text-sm text-slate-900 dark:text-white flex items-center gap-2">
+                <span>👤</span> Compromisos por Responsable
+              </h3>
+              <p class="text-xs text-slate-500 dark:text-slate-400">Distribución de tareas pendientes vs completadas</p>
+            </div>
+
+            <div id="kpiOwnersList" class="space-y-3 text-xs">
+              <!-- Rendered via JS -->
+            </div>
+          </div>
+
+          <!-- Documentos & Formatos Impactados -->
+          <div class="bg-white dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 space-y-3 shadow-sm transition">
+            <div class="border-b border-slate-100 dark:border-slate-800 pb-2">
+              <h3 class="font-bold text-sm text-slate-900 dark:text-white flex items-center gap-2">
+                <span>📄</span> Procedimientos Afectados
+              </h3>
+              <p class="text-xs text-slate-500 dark:text-slate-400">Instructivos y manuales con compromisos de actualización</p>
+            </div>
+
+            <div id="kpiDocsList" class="flex flex-wrap gap-1.5 text-xs">
+              <!-- Rendered via JS -->
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+
+      <!-- Lista de Actuaciones Pendientes Inmediatas -->
+      <div class="bg-white dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 space-y-4 shadow-sm transition">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 dark:border-slate-800 pb-3">
+          <div>
+            <h2 class="font-bold text-sm text-slate-900 dark:text-white flex items-center gap-2">
+              <span class="w-2.5 h-2.5 rounded-full bg-rose-500 animate-ping"></span>
+              Actuaciones Técnicas Inmediatas de la Instalación
+            </h2>
+            <p class="text-xs text-slate-500 dark:text-slate-400">Requerimientos derivados de comunicaciones oficiales pendientes de ejecución</p>
+          </div>
+          <div class="flex items-center gap-2">
+            <select id="kpiActionFilter" onchange="renderDashboard()" class="bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-lg px-2.5 py-1 text-xs text-slate-700 dark:text-slate-200 focus:outline-none focus:border-amber-500">
+              <option value="ALL">Todas las prioridades</option>
+              <option value="ALTA">Solo Prioridad Alta</option>
+              <option value="MEDIA">Prioridad Media y Baja</option>
+            </select>
+            <button onclick="switchTab('actions')" class="text-xs text-amber-600 dark:text-amber-400 hover:underline font-semibold whitespace-nowrap">Gestionar todas &rarr;</button>
+          </div>
+        </div>
+
+        <div id="dashboardPendingList" class="space-y-3">
+          <!-- Dynamic pending items loaded here -->
+        </div>
       </div>
 
     </section>
@@ -261,21 +367,21 @@
     <!-- TAB 2: HISTÓRICO DE COMUNICACIONES -->
     <!-- ========================================================================= -->
     <section id="tab-communications" class="hidden space-y-6">
-      <div class="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4 bg-slate-900/60 p-4 rounded-xl border border-slate-800">
+      <div class="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4 bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm transition">
         <div class="flex-1 flex items-center gap-2">
           <input type="text" id="searchCommInput" oninput="renderCommunicationsTable()" placeholder="Buscar por radicado, asunto, documento..." 
-                 class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:border-amber-500">
-          <select id="filterCommType" onchange="renderCommunicationsTable()" class="bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-amber-500">
+                 class="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-lg px-3 py-2 text-xs text-slate-800 dark:text-slate-200 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:border-amber-500">
+          <select id="filterCommType" onchange="renderCommunicationsTable()" class="bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-lg px-3 py-2 text-xs text-slate-800 dark:text-slate-200 focus:outline-none focus:border-amber-500">
             <option value="ALL">Todos los tipos</option>
             <option value="ENTRADA">Entrada (MME / Externo)</option>
             <option value="SALIDA">Salida (SGC / IAN-R1)</option>
           </select>
         </div>
         <div class="flex items-center gap-2">
-          <button onclick="exportDataJSON()" class="bg-slate-800 hover:bg-slate-700 text-slate-200 px-3 py-2 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition">
+          <button onclick="exportDataJSON()" class="bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-700 px-3 py-2 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition">
             <span>💾 Respaldar Datos</span>
           </button>
-          <label class="bg-slate-800 hover:bg-slate-700 text-slate-200 px-3 py-2 rounded-lg text-xs font-semibold flex items-center gap-1.5 cursor-pointer transition">
+          <label class="bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-700 px-3 py-2 rounded-lg text-xs font-semibold flex items-center gap-1.5 cursor-pointer transition">
             <span>📂 Restaurar</span>
             <input type="file" id="importFileInput" onchange="importDataJSON(event)" class="hidden" accept=".json">
           </label>
@@ -283,10 +389,10 @@
       </div>
 
       <!-- Tabla de Comunicaciones -->
-      <div class="bg-slate-900 border border-slate-800 rounded-xl overflow-hidden shadow-xl">
+      <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl overflow-hidden shadow-sm transition">
         <div class="overflow-x-auto">
           <table class="w-full text-left text-xs">
-            <thead class="bg-slate-950/80 text-slate-400 uppercase tracking-wider font-semibold border-b border-slate-800">
+            <thead class="bg-slate-100 dark:bg-slate-950/80 text-slate-700 dark:text-slate-400 uppercase tracking-wider font-semibold border-b border-slate-200 dark:border-slate-800">
               <tr>
                 <th class="p-3.5">Tipo & Radicados</th>
                 <th class="p-3.5">Fecha</th>
@@ -297,7 +403,7 @@
                 <th class="p-3.5 text-right">Opciones</th>
               </tr>
             </thead>
-            <tbody id="communicationsTableBody" class="divide-y divide-slate-800 text-slate-300">
+            <tbody id="communicationsTableBody" class="divide-y divide-slate-200 dark:divide-slate-800 text-slate-800 dark:text-slate-300">
               <!-- Rendered via JS -->
             </tbody>
           </table>
@@ -311,8 +417,8 @@
     <section id="tab-actions" class="hidden space-y-6">
       <div class="flex items-center justify-between">
         <div>
-          <h2 class="text-lg font-bold text-white">Matriz de Compromisos y Actuaciones Pendientes</h2>
-          <p class="text-xs text-slate-400">Seguimiento a los documentos que la instalación debe actualizar, fuentes por recibir o informes por radicar ante el MME.</p>
+          <h2 class="text-lg font-bold text-slate-900 dark:text-white">Matriz de Compromisos y Actuaciones Pendientes</h2>
+          <p class="text-xs text-slate-500 dark:text-slate-400">Seguimiento a los documentos que la instalación debe actualizar, fuentes por recibir o informes por radicar ante el MME.</p>
         </div>
         <button onclick="openModalNewAction()" class="bg-rose-600 hover:bg-rose-500 text-white font-bold px-3 py-2 rounded-lg text-xs transition flex items-center gap-1.5 shadow-md">
           <span>+ Agregar Actuación</span>
@@ -328,100 +434,100 @@
     <!-- TAB 4: CALENDARIO DE OBLIGACIONES REGULATORIAS PERIÓDICAS -->
     <!-- ========================================================================= -->
     <section id="tab-regulatory" class="hidden space-y-6">
-      <div class="bg-slate-900 border border-slate-800 rounded-xl p-5 space-y-4">
-        <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+      <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-5 space-y-4 shadow-sm transition">
+        <div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
           <div>
-            <h2 class="text-base font-bold text-white flex items-center gap-2">
-              <span class="text-amber-400">⚖</span> Obligaciones Periódicas Mandatorias (Resolución 18-1475 de 2004)
+            <h2 class="text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
+              <span class="text-amber-500">⚖</span> Obligaciones Periódicas Mandatorias (Resolución 18-1475 de 2004)
             </h2>
-            <p class="text-xs text-slate-400">Ciclos fijos normativos que la instalación y el órgano regulador deben verificar de forma permanente.</p>
+            <p class="text-xs text-slate-500 dark:text-slate-400">Ciclos fijos normativos que la instalación y el órgano regulador deben verificar de forma permanente.</p>
           </div>
-          <span class="text-[11px] font-mono bg-slate-800 text-slate-300 px-2.5 py-1 rounded">MME - SGC</span>
+          <span class="text-[11px] font-mono bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 px-2.5 py-1 rounded">MME - SGC</span>
         </div>
 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
           
           <!-- Semestral Febrero -->
-          <div class="p-4 bg-slate-950 rounded-xl border border-slate-800 space-y-2">
+          <div class="p-4 bg-slate-50 dark:bg-slate-950 rounded-xl border border-slate-200 dark:border-slate-800 space-y-2">
             <div class="flex items-center justify-between">
-              <span class="text-xs font-bold text-amber-400 uppercase tracking-wider">Informe Semestral I (Febrero)</span>
-              <span class="text-[10px] bg-amber-500/20 text-amber-300 px-2 py-0.5 rounded font-mono">Art. 21, Num. 1</span>
+              <span class="text-xs font-bold text-amber-600 dark:text-amber-400 uppercase tracking-wider">Informe Semestral I (Febrero)</span>
+              <span class="text-[10px] bg-amber-500/10 text-amber-600 dark:text-amber-300 border border-amber-500/20 px-2 py-0.5 rounded font-mono">Art. 21, Num. 1</span>
             </div>
-            <div class="text-sm font-semibold text-slate-200">Entrega dentro de los primeros 15 días de Febrero</div>
-            <p class="text-xs text-slate-400">Informe descriptivo del funcionamiento de la instalación y las actividades más importantes del segundo semestre anterior.</p>
-            <div class="pt-2 text-[11px] text-slate-500 flex items-center justify-between border-t border-slate-900">
+            <div class="text-sm font-semibold text-slate-800 dark:text-slate-200">Entrega dentro de los primeros 15 días de Febrero</div>
+            <p class="text-xs text-slate-500 dark:text-slate-400">Informe descriptivo del funcionamiento de la instalación y las actividades más importantes del segundo semestre anterior.</p>
+            <div class="pt-2 text-[11px] text-slate-500 flex items-center justify-between border-t border-slate-200 dark:border-slate-900">
               <span>Periodicidad: Anual (Cada Febrero)</span>
-              <span class="text-emerald-400 font-semibold">Obligatorio SGC</span>
+              <span class="text-emerald-600 dark:text-emerald-400 font-semibold">Obligatorio SGC</span>
             </div>
           </div>
 
           <!-- Semestral Agosto -->
-          <div class="p-4 bg-slate-950 rounded-xl border border-slate-800 space-y-2">
+          <div class="p-4 bg-slate-50 dark:bg-slate-950 rounded-xl border border-slate-200 dark:border-slate-800 space-y-2">
             <div class="flex items-center justify-between">
-              <span class="text-xs font-bold text-amber-400 uppercase tracking-wider">Informe Semestral II (Agosto)</span>
-              <span class="text-[10px] bg-amber-500/20 text-amber-300 px-2 py-0.5 rounded font-mono">Art. 21, Num. 1</span>
+              <span class="text-xs font-bold text-amber-600 dark:text-amber-400 uppercase tracking-wider">Informe Semestral II (Agosto)</span>
+              <span class="text-[10px] bg-amber-500/10 text-amber-600 dark:text-amber-300 border border-amber-500/20 px-2 py-0.5 rounded font-mono">Art. 21, Num. 1</span>
             </div>
-            <div class="text-sm font-semibold text-slate-200">Entrega dentro de los primeros 15 días de Agosto</div>
-            <p class="text-xs text-slate-400">Informe sobre el funcionamiento y actividades del primer semestre en curso del reactor IAN-R1.</p>
-            <div class="pt-2 text-[11px] text-slate-500 flex items-center justify-between border-t border-slate-900">
+            <div class="text-sm font-semibold text-slate-800 dark:text-slate-200">Entrega dentro de los primeros 15 días de Agosto</div>
+            <p class="text-xs text-slate-500 dark:text-slate-400">Informe sobre el funcionamiento y actividades del primer semestre en curso del reactor IAN-R1.</p>
+            <div class="pt-2 text-[11px] text-slate-500 flex items-center justify-between border-t border-slate-200 dark:border-slate-900">
               <span>Periodicidad: Anual (Cada Agosto)</span>
-              <span class="text-emerald-400 font-semibold">Obligatorio SGC</span>
+              <span class="text-emerald-600 dark:text-emerald-400 font-semibold">Obligatorio SGC</span>
             </div>
           </div>
 
           <!-- Anual Enero -->
-          <div class="p-4 bg-slate-950 rounded-xl border border-slate-800 space-y-2">
+          <div class="p-4 bg-slate-50 dark:bg-slate-950 rounded-xl border border-slate-200 dark:border-slate-800 space-y-2">
             <div class="flex items-center justify-between">
-              <span class="text-xs font-bold text-blue-400 uppercase tracking-wider">Informe Anual de Operación (Enero)</span>
-              <span class="text-[10px] bg-blue-500/20 text-blue-300 px-2 py-0.5 rounded font-mono">Art. 21, Num. 2</span>
+              <span class="text-xs font-bold text-blue-600 dark:text-blue-400 uppercase tracking-wider">Informe Anual de Operación (Enero)</span>
+              <span class="text-[10px] bg-blue-500/10 text-blue-600 dark:text-blue-300 border border-blue-500/20 px-2 py-0.5 rounded font-mono">Art. 21, Num. 2</span>
             </div>
-            <div class="text-sm font-semibold text-slate-200">Primeros 15 días hábiles de Enero</div>
-            <p class="text-xs text-slate-400">Operación anual, modificaciones de diseño, capacitación/reentrenamiento del personal, resultados de vigilancia radiológica y controles dosimétricos.</p>
-            <div class="pt-2 text-[11px] text-slate-500 flex items-center justify-between border-t border-slate-900">
+            <div class="text-sm font-semibold text-slate-800 dark:text-slate-200">Primeros 15 días hábiles de Enero</div>
+            <p class="text-xs text-slate-500 dark:text-slate-400">Operación anual, modificaciones de diseño, capacitación/reentrenamiento del personal, resultados de vigilancia radiológica y controles dosimétricos.</p>
+            <div class="pt-2 text-[11px] text-slate-500 flex items-center justify-between border-t border-slate-200 dark:border-slate-900">
               <span>Incluye: Programa Gestión Envejecimiento</span>
-              <span class="text-emerald-400 font-semibold">Obligatorio SGC</span>
+              <span class="text-emerald-600 dark:text-emerald-400 font-semibold">Obligatorio SGC</span>
             </div>
           </div>
 
           <!-- Inspecciones Semestrales MME -->
-          <div class="p-4 bg-slate-950 rounded-xl border border-slate-800 space-y-2">
+          <div class="p-4 bg-slate-50 dark:bg-slate-950 rounded-xl border border-slate-200 dark:border-slate-800 space-y-2">
             <div class="flex items-center justify-between">
-              <span class="text-xs font-bold text-emerald-400 uppercase tracking-wider">2 Inspecciones Semestrales MME</span>
-              <span class="text-[10px] bg-emerald-500/20 text-emerald-300 px-2 py-0.5 rounded font-mono">Art. 46</span>
+              <span class="text-xs font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-wider">2 Inspecciones Semestrales MME</span>
+              <span class="text-[10px] bg-emerald-500/10 text-emerald-600 dark:text-emerald-300 border border-emerald-500/20 px-2 py-0.5 rounded font-mono">Art. 46</span>
             </div>
-            <div class="text-sm font-semibold text-slate-200">Cada seis (6) meses por la Autoridad Reguladora</div>
-            <p class="text-xs text-slate-400">Verificación in situ de condiciones de seguridad nuclear, seguridad física, salvaguardias y protección radiológica. Origina actas con presunción de veracidad (Art. 45).</p>
-            <div class="pt-2 text-[11px] text-slate-500 flex items-center justify-between border-t border-slate-900">
+            <div class="text-sm font-semibold text-slate-800 dark:text-slate-200">Cada seis (6) meses por la Autoridad Reguladora</div>
+            <p class="text-xs text-slate-500 dark:text-slate-400">Verificación in situ de condiciones de seguridad nuclear, seguridad física, salvaguardias y protección radiológica. Origina actas con presunción de veracidad (Art. 45).</p>
+            <div class="pt-2 text-[11px] text-slate-500 flex items-center justify-between border-t border-slate-200 dark:border-slate-900">
               <span>Soporte: Art. 44 (Obligaciones del Titular)</span>
-              <span class="text-amber-400 font-semibold">Competencia MME</span>
+              <span class="text-amber-600 dark:text-amber-400 font-semibold">Competencia MME</span>
             </div>
           </div>
 
           <!-- Simulacro de Emergencia -->
-          <div class="p-4 bg-slate-950 rounded-xl border border-slate-800 space-y-2">
+          <div class="p-4 bg-slate-50 dark:bg-slate-950 rounded-xl border border-slate-200 dark:border-slate-800 space-y-2">
             <div class="flex items-center justify-between">
-              <span class="text-xs font-bold text-purple-400 uppercase tracking-wider">Ejercicio del Plan de Emergencias</span>
-              <span class="text-[10px] bg-purple-500/20 text-purple-300 px-2 py-0.5 rounded font-mono">Art. 37 & Res. 18-1434 Art. 105</span>
+              <span class="text-xs font-bold text-purple-600 dark:text-purple-400 uppercase tracking-wider">Ejercicio del Plan de Emergencias</span>
+              <span class="text-[10px] bg-purple-500/10 text-purple-600 dark:text-purple-300 border border-purple-500/20 px-2 py-0.5 rounded font-mono">Art. 37 & Res. 18-1434 Art. 105</span>
             </div>
-            <div class="text-sm font-semibold text-slate-200">Simulacro periódico de emergencia nuclear/radiológica</div>
-            <p class="text-xs text-slate-400">Puesta a prueba de los procedimientos y asignación de responsabilidades. Debe comunicarse con antelación a la Autoridad Reguladora.</p>
-            <div class="pt-2 text-[11px] text-slate-500 flex items-center justify-between border-t border-slate-900">
+            <div class="text-sm font-semibold text-slate-800 dark:text-slate-200">Simulacro periódico de emergencia nuclear/radiológica</div>
+            <p class="text-xs text-slate-500 dark:text-slate-400">Puesta a prueba de los procedimientos y asignación de responsabilidades. Debe comunicarse con antelación a la Autoridad Reguladora.</p>
+            <div class="pt-2 text-[11px] text-slate-500 flex items-center justify-between border-t border-slate-200 dark:border-slate-900">
               <span>Registro: F-TNU-MRN-084 / 091 / 092</span>
-              <span class="text-emerald-400 font-semibold">Anual Recomendado</span>
+              <span class="text-emerald-600 dark:text-emerald-400 font-semibold">Anual Recomendado</span>
             </div>
           </div>
 
           <!-- SAR Revisión Quinquenal -->
-          <div class="p-4 bg-slate-950 rounded-xl border border-slate-800 space-y-2">
+          <div class="p-4 bg-slate-50 dark:bg-slate-950 rounded-xl border border-slate-200 dark:border-slate-800 space-y-2">
             <div class="flex items-center justify-between">
-              <span class="text-xs font-bold text-rose-400 uppercase tracking-wider">Revisión del SAR (Análisis de Seguridad)</span>
-              <span class="text-[10px] bg-rose-500/20 text-rose-300 px-2 py-0.5 rounded font-mono">Art. 36</span>
+              <span class="text-xs font-bold text-rose-600 dark:text-rose-400 uppercase tracking-wider">Revisión del SAR (Análisis de Seguridad)</span>
+              <span class="text-[10px] bg-rose-500/10 text-rose-600 dark:text-rose-300 border border-rose-500/20 px-2 py-0.5 rounded font-mono">Art. 36</span>
             </div>
-            <div class="text-sm font-semibold text-slate-200">Al menos una vez cada cinco (5) años</div>
-            <p class="text-xs text-slate-400">Actualización obligatoria ante modificaciones al diseño o a los límites y condiciones de operación, o vencimiento del ciclo quinquenal.</p>
-            <div class="pt-2 text-[11px] text-slate-500 flex items-center justify-between border-t border-slate-900">
+            <div class="text-sm font-semibold text-slate-800 dark:text-slate-200">Al menos una vez cada cinco (5) años</div>
+            <p class="text-xs text-slate-500 dark:text-slate-400">Actualización obligatoria ante modificaciones al diseño o a los límites y condiciones de operación, o vencimiento del ciclo quinquenal.</p>
+            <div class="pt-2 text-[11px] text-slate-500 flex items-center justify-between border-t border-slate-200 dark:border-slate-900">
               <span>Documento: MO-TNU-MRN-003</span>
-              <span class="text-rose-400 font-semibold">Revisión Continua</span>
+              <span class="text-rose-600 dark:text-rose-400 font-semibold">Revisión Continua</span>
             </div>
           </div>
 
@@ -433,54 +539,54 @@
     <!-- TAB 5: ANALIZADOR AUTOMÁTICO DE COMUNICACIONES -->
     <!-- ========================================================================= -->
     <section id="tab-analyzer" class="hidden space-y-6">
-      <div class="bg-slate-900 border border-slate-800 rounded-xl p-5 space-y-5 shadow-xl">
-        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-800 pb-4">
+      <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-5 space-y-5 shadow-sm transition">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 dark:border-slate-800 pb-4">
           <div>
             <div class="flex items-center gap-2">
-              <span class="p-1.5 rounded-lg bg-amber-500/10 text-amber-400 border border-amber-500/20 text-base">⚛️</span>
-              <h2 class="text-base font-bold text-white">Evaluador Regulatorio & Redactor Oficial con Gemini AI</h2>
-              <span class="text-[10px] font-mono px-2 py-0.5 rounded-full bg-purple-500/20 text-purple-300 border border-purple-500/30 font-semibold flex items-center gap-1">
-                <span class="w-1.5 h-1.5 rounded-full bg-purple-400 animate-pulse"></span> gemini-3-flash-preview
+              <span class="p-1.5 rounded-lg bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20 text-base">⚛️</span>
+              <h2 class="text-base font-bold text-slate-900 dark:text-white">Evaluador Regulatorio & Redactor Oficial con Gemini AI</h2>
+              <span class="text-[10px] font-mono px-2 py-0.5 rounded-full bg-purple-500/10 text-purple-700 dark:text-purple-300 border border-purple-500/30 font-semibold flex items-center gap-1">
+                <span class="w-1.5 h-1.5 rounded-full bg-purple-500 animate-pulse"></span> gemini-3.8-flash
               </span>
             </div>
-            <p class="text-xs text-slate-400 mt-1">Análisis normativo integral del Reactor IAN-R1, dictamen de impacto en la Licencia LO-MME-013-2025-M2, extracción de compromisos y redacción automática de oficios oficiales.</p>
+            <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">Análisis normativo integral del Reactor IAN-R1, dictamen de impacto en la Licencia LO-MME-013-2025-M2, extracción de compromisos y redacción automática de oficios oficiales.</p>
           </div>
           <div class="flex items-center gap-2">
-            <span class="text-[11px] text-slate-400 font-mono hidden md:inline">Marco: Res. 18-1475 / 18-1434</span>
+            <span class="text-[11px] text-slate-500 dark:text-slate-400 font-mono hidden md:inline">Marco: Res. 18-1475 / 18-1434</span>
           </div>
         </div>
 
         <!-- Modo de Operación IA -->
-        <div class="flex gap-2 border-b border-slate-800/80 pb-2">
-          <button id="aiModeBtn-analyze" onclick="setAIMode('analyze')" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-amber-500/20 text-amber-300 border border-amber-500/30 transition">
+        <div class="flex flex-wrap gap-2 border-b border-slate-100 dark:border-slate-800/80 pb-2">
+          <button id="aiModeBtn-analyze" onclick="setAIMode('analyze')" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-amber-500/10 text-amber-700 dark:text-amber-300 border border-amber-500/30 transition">
             🔍 Analizar Comunicación y Extraer Actuaciones
           </button>
-          <button id="aiModeBtn-draft" onclick="setAIMode('draft')" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-800 text-slate-300 hover:text-white transition">
+          <button id="aiModeBtn-draft" onclick="setAIMode('draft')" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white transition">
             ✍️ Redactar Respuesta Oficial para MME
           </button>
-          <button id="aiModeBtn-consult" onclick="setAIMode('consult')" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-800 text-slate-300 hover:text-white transition">
+          <button id="aiModeBtn-consult" onclick="setAIMode('consult')" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white transition">
             💬 Consulta Normativa Directa
           </button>
         </div>
 
         <div class="space-y-3">
           <div class="flex items-center justify-between">
-            <label id="aiInputLabel" class="text-xs font-semibold text-slate-300 block">Texto, Asunto o Comunicado para Análisis:</label>
+            <label id="aiInputLabel" class="text-xs font-semibold text-slate-700 dark:text-slate-300 block">Texto, Asunto o Comunicado para Análisis:</label>
             <div class="flex gap-1.5" id="presetButtonsGroup">
-              <button onclick="loadAnalyzerPreset('aerosoles')" class="text-[10px] px-2 py-1 rounded bg-slate-800 text-slate-300 hover:bg-slate-700 transition">Caso: Fuentes Aerosoles</button>
-              <button onclick="loadAnalyzerPreset('acceso')" class="text-[10px] px-2 py-1 rounded bg-slate-800 text-slate-300 hover:bg-slate-700 transition">Caso: Instructivo Acceso QR</button>
-              <button onclick="loadAnalyzerPreset('personal')" class="text-[10px] px-2 py-1 rounded bg-slate-800 text-slate-300 hover:bg-slate-700 transition">Caso: Novedad Personal M2</button>
+              <button onclick="loadAnalyzerPreset('aerosoles')" class="text-[10px] px-2 py-1 rounded bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 transition">Caso: Fuentes Aerosoles</button>
+              <button onclick="loadAnalyzerPreset('acceso')" class="text-[10px] px-2 py-1 rounded bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 transition">Caso: Instructivo Acceso QR</button>
+              <button onclick="loadAnalyzerPreset('personal')" class="text-[10px] px-2 py-1 rounded bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 transition">Caso: Novedad Personal M2</button>
             </div>
           </div>
 
-          <textarea id="analyzerInputText" rows="5" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-xs text-slate-100 placeholder-slate-600 focus:outline-none focus:border-amber-500 font-mono leading-relaxed" 
+          <textarea id="analyzerInputText" rows="5" class="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl p-3 text-xs text-slate-800 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-600 focus:outline-none focus:border-amber-500 font-mono leading-relaxed" 
                     placeholder="Pega el contenido o radicado de la comunicación entrante o saliente para que Gemini evalúe el cumplimiento normativo..."></textarea>
           
           <div class="flex flex-wrap items-center justify-between gap-3 pt-1">
             <div class="text-[11px] text-slate-500 flex items-center gap-1.5">
               <span>🛡️ Verificación estricta de vigencia al 23-Jul-2030 y roles autorizados (Jimmy Muñoz Rocha / Andrea Sánchez).</span>
             </div>
-            <button id="btnExecuteAI" onclick="executeAITask()" class="bg-gradient-to-r from-amber-500 to-yellow-600 hover:from-amber-400 hover:to-yellow-500 text-slate-950 font-bold px-4 py-2 rounded-lg text-xs transition flex items-center gap-2 shadow-lg shadow-amber-500/20 active:scale-95">
+            <button id="btnExecuteAI" onclick="executeAITask()" class="bg-gradient-to-r from-amber-500 to-yellow-600 hover:from-amber-400 hover:to-yellow-500 text-slate-950 font-bold px-4 py-2 rounded-lg text-xs transition flex items-center gap-2 shadow-md hover:shadow-amber-500/25 active:scale-95">
               <span id="aiButtonIcon">⚡</span>
               <span id="aiButtonText">Ejecutar Análisis con Gemini AI</span>
             </button>
@@ -488,9 +594,9 @@
         </div>
 
         <!-- Indicador de Carga IA -->
-        <div id="aiLoadingIndicator" class="hidden p-6 bg-slate-950/60 rounded-xl border border-slate-800 text-center space-y-3">
-          <div class="inline-block w-8 h-8 border-4 border-amber-500/30 border-t-amber-400 rounded-full animate-spin"></div>
-          <p class="text-xs font-semibold text-amber-300" id="aiLoadingStatusText">Consultando marco regulatorio con Gemini 3 Flash...</p>
+        <div id="aiLoadingIndicator" class="hidden p-6 bg-slate-50 dark:bg-slate-950/60 rounded-xl border border-slate-200 dark:border-slate-800 text-center space-y-3">
+          <div class="inline-block w-8 h-8 border-4 border-amber-500/30 border-t-amber-500 rounded-full animate-spin"></div>
+          <p class="text-xs font-semibold text-amber-600 dark:text-amber-300" id="aiLoadingStatusText">Consultando marco regulatorio con Gemini 3.8 Flash...</p>
           <p class="text-[11px] text-slate-500">Cotejando Licencia LO-MME-013-2025-M2, Resoluciones 18-1475/2004 y 18-1434/2002</p>
         </div>
 
@@ -583,80 +689,80 @@
   </main>
 
   <!-- MODAL: NUEVA COMUNICACIÓN -->
-  <div id="modalNewComm" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
-    <div class="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-2xl overflow-hidden shadow-2xl flex flex-col max-h-[90vh]">
+  <div id="modalNewComm" class="fixed inset-0 bg-slate-950/70 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl w-full max-w-2xl overflow-hidden shadow-2xl flex flex-col max-h-[90vh] transition">
       
-      <div class="px-5 py-4 border-b border-slate-800 flex items-center justify-between">
+      <div class="px-5 py-4 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
         <div>
-          <h3 class="text-sm font-bold text-white">Registrar Nueva Comunicación</h3>
-          <p class="text-xs text-slate-400">Cargar trazabilidad de entrada/salida y compromisos regulatorios</p>
+          <h3 class="text-sm font-bold text-slate-900 dark:text-white">Registrar Nueva Comunicación</h3>
+          <p class="text-xs text-slate-500 dark:text-slate-400">Cargar trazabilidad de entrada/salida y compromisos regulatorios</p>
         </div>
-        <button onclick="closeModalNewComm()" class="text-slate-400 hover:text-white text-lg">&times;</button>
+        <button onclick="closeModalNewComm()" class="text-slate-400 hover:text-slate-600 dark:hover:text-white text-lg">&times;</button>
       </div>
 
       <form id="formNewComm" onsubmit="handleSaveCommunication(event)" class="p-5 space-y-4 overflow-y-auto custom-scrollbar flex-1 text-xs">
         
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
-            <label class="block text-slate-300 font-medium mb-1">Tipo de Flujo</label>
-            <select id="commFlowType" class="w-full bg-slate-950 border border-slate-800 rounded-lg p-2 text-slate-200 focus:outline-none focus:border-amber-500">
+            <label class="block text-slate-700 dark:text-slate-300 font-medium mb-1">Tipo de Flujo</label>
+            <select id="commFlowType" class="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-lg p-2 text-slate-800 dark:text-slate-200 focus:outline-none focus:border-amber-500">
               <option value="ENTRADA">Entrada (Desde MME u otra entidad)</option>
               <option value="SALIDA">Salida (Desde SGC / IAN-R1)</option>
             </select>
           </div>
 
           <div>
-            <label class="block text-slate-300 font-medium mb-1">Fecha de Radicación</label>
-            <input type="date" id="commDate" required class="w-full bg-slate-950 border border-slate-800 rounded-lg p-2 text-slate-200 focus:outline-none focus:border-amber-500">
+            <label class="block text-slate-700 dark:text-slate-300 font-medium mb-1">Fecha de Radicación</label>
+            <input type="date" id="commDate" required class="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-lg p-2 text-slate-800 dark:text-slate-200 focus:outline-none focus:border-amber-500">
           </div>
         </div>
 
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
-            <label class="block text-slate-300 font-medium mb-1">Radicado MME</label>
-            <input type="text" id="commRadMME" placeholder="Ej. 1-2026-041551 ó 2-2026-037984" class="w-full bg-slate-950 border border-slate-800 rounded-lg p-2 text-slate-200 font-mono focus:outline-none focus:border-amber-500">
+            <label class="block text-slate-700 dark:text-slate-300 font-medium mb-1">Radicado MME</label>
+            <input type="text" id="commRadMME" placeholder="Ej. 1-2026-041551 ó 2-2026-037984" class="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-lg p-2 text-slate-800 dark:text-slate-200 font-mono focus:outline-none focus:border-amber-500">
           </div>
           <div>
-            <label class="block text-slate-300 font-medium mb-1">Radicado SGC (Argo)</label>
-            <input type="text" id="commRadSGC" placeholder="Ej. 2026-800-010844-2" class="w-full bg-slate-950 border border-slate-800 rounded-lg p-2 text-slate-200 font-mono focus:outline-none focus:border-amber-500">
+            <label class="block text-slate-700 dark:text-slate-300 font-medium mb-1">Radicado SGC (Argo)</label>
+            <input type="text" id="commRadSGC" placeholder="Ej. 2026-800-010844-2" class="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-lg p-2 text-slate-800 dark:text-slate-200 font-mono focus:outline-none focus:border-amber-500">
           </div>
         </div>
 
         <div>
-          <label class="block text-slate-300 font-medium mb-1">Asunto Oficial</label>
-          <input type="text" id="commSubject" required placeholder="Ej. Actualización de instructivo de control de acceso IN-TNU-MRN-016" class="w-full bg-slate-950 border border-slate-800 rounded-lg p-2 text-slate-200 focus:outline-none focus:border-amber-500">
+          <label class="block text-slate-700 dark:text-slate-300 font-medium mb-1">Asunto Oficial</label>
+          <input type="text" id="commSubject" required placeholder="Ej. Actualización de instructivo de control de acceso IN-TNU-MRN-016" class="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-lg p-2 text-slate-800 dark:text-slate-200 focus:outline-none focus:border-amber-500">
         </div>
 
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
-            <label class="block text-slate-300 font-medium mb-1">Remitente</label>
-            <input type="text" id="commSender" placeholder="Ej. Jimmy Alejandro Muñoz (SGC) / Juan Pablo Parra (MME)" class="w-full bg-slate-950 border border-slate-800 rounded-lg p-2 text-slate-200 focus:outline-none focus:border-amber-500">
+            <label class="block text-slate-700 dark:text-slate-300 font-medium mb-1">Remitente</label>
+            <input type="text" id="commSender" placeholder="Ej. Jimmy Alejandro Muñoz (SGC) / Juan Pablo Parra (MME)" class="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-lg p-2 text-slate-800 dark:text-slate-200 focus:outline-none focus:border-amber-500">
           </div>
           <div>
-            <label class="block text-slate-300 font-medium mb-1">Destinatario</label>
-            <input type="text" id="commReceiver" placeholder="Ej. Juan Pablo Parra (MME) / Jimmy Alejandro Muñoz (SGC)" class="w-full bg-slate-950 border border-slate-800 rounded-lg p-2 text-slate-200 focus:outline-none focus:border-amber-500">
+            <label class="block text-slate-700 dark:text-slate-300 font-medium mb-1">Destinatario</label>
+            <input type="text" id="commReceiver" placeholder="Ej. Juan Pablo Parra (MME) / Jimmy Alejandro Muñoz (SGC)" class="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-lg p-2 text-slate-800 dark:text-slate-200 focus:outline-none focus:border-amber-500">
           </div>
         </div>
 
         <div>
-          <label class="block text-slate-300 font-medium mb-1">Documentos, Manuales o Formatos Afectados</label>
-          <input type="text" id="commDocs" placeholder="Ej. IN-TNU-MRN-016, F-TNU-MRN-067, MO-TNU-MRN-007" class="w-full bg-slate-950 border border-slate-800 rounded-lg p-2 text-slate-200 font-mono focus:outline-none focus:border-amber-500">
+          <label class="block text-slate-700 dark:text-slate-300 font-medium mb-1">Documentos, Manuales o Formatos Afectados</label>
+          <input type="text" id="commDocs" placeholder="Ej. IN-TNU-MRN-016, F-TNU-MRN-067, MO-TNU-MRN-007" class="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-lg p-2 text-slate-800 dark:text-slate-200 font-mono focus:outline-none focus:border-amber-500">
           <span class="text-[10px] text-slate-500">Separar por comas</span>
         </div>
 
         <div>
-          <label class="block text-slate-300 font-medium mb-1">Actuaciones Requeridas / Tareas Derivadas</label>
-          <textarea id="commActionsReq" rows="3" placeholder="¿Qué debe realizar la instalación? Ej: 1. Calibrar detector tras recibir fuentes compatibles. 2. Actualizar formatos F-TNU-MRN-060 y 063. 3. Remitir informe formal al MME." class="w-full bg-slate-950 border border-slate-800 rounded-lg p-2 text-slate-200 focus:outline-none focus:border-amber-500"></textarea>
+          <label class="block text-slate-700 dark:text-slate-300 font-medium mb-1">Actuaciones Requeridas / Tareas Derivadas</label>
+          <textarea id="commActionsReq" rows="3" placeholder="¿Qué debe realizar la instalación? Ej: 1. Calibrar detector tras recibir fuentes compatibles. 2. Actualizar formatos F-TNU-MRN-060 y 063. 3. Remitir informe formal al MME." class="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-lg p-2 text-slate-800 dark:text-slate-200 focus:outline-none focus:border-amber-500"></textarea>
         </div>
 
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
-            <label class="block text-slate-300 font-medium mb-1">Fecha Límite para Entrega / Actuación</label>
-            <input type="date" id="commDeadline" class="w-full bg-slate-950 border border-slate-800 rounded-lg p-2 text-slate-200 focus:outline-none focus:border-amber-500">
+            <label class="block text-slate-700 dark:text-slate-300 font-medium mb-1">Fecha Límite para Entrega / Actuación</label>
+            <input type="date" id="commDeadline" class="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-lg p-2 text-slate-800 dark:text-slate-200 focus:outline-none focus:border-amber-500">
           </div>
           <div>
-            <label class="block text-slate-300 font-medium mb-1">Estado de la Comunicación</label>
-            <select id="commStatus" class="w-full bg-slate-950 border border-slate-800 rounded-lg p-2 text-slate-200 focus:outline-none focus:border-amber-500">
+            <label class="block text-slate-700 dark:text-slate-300 font-medium mb-1">Estado de la Comunicación</label>
+            <select id="commStatus" class="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-lg p-2 text-slate-800 dark:text-slate-200 focus:outline-none focus:border-amber-500">
               <option value="PENDIENTE">Pendiente de Actuación / Respuesta</option>
               <option value="EN_TRAMITE">En Trámite Técnico</option>
               <option value="CERRADO">Cerrado / Incorporado</option>
@@ -664,12 +770,12 @@
           </div>
         </div>
 
-        <div class="pt-3 border-t border-slate-800 flex justify-between items-center gap-2">
-          <button type="button" onclick="autoAnalyzeWithGeminiFromModal()" class="px-3 py-2 rounded-lg bg-purple-900/40 text-purple-300 border border-purple-500/30 hover:bg-purple-900/60 font-semibold text-xs flex items-center gap-1.5 transition">
-            <span>✨ Autocompletar Tareas con IA</span>
+        <div class="pt-3 border-t border-slate-100 dark:border-slate-800 flex justify-between items-center gap-2">
+          <button type="button" onclick="autoAnalyzeWithGeminiFromModal()" class="px-3 py-2 rounded-lg bg-purple-900/10 dark:bg-purple-900/40 text-purple-700 dark:text-purple-300 border border-purple-500/30 hover:bg-purple-900/20 dark:hover:bg-purple-900/60 font-semibold text-xs flex items-center gap-1.5 transition">
+            <span>✨ Autocompletar con IA</span>
           </button>
           <div class="flex gap-2">
-            <button type="button" onclick="closeModalNewComm()" class="px-3.5 py-2 rounded-lg bg-slate-800 text-slate-300 hover:bg-slate-700 transition">Cancelar</button>
+            <button type="button" onclick="closeModalNewComm()" class="px-3.5 py-2 rounded-lg bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 transition">Cancelar</button>
             <button type="submit" class="px-4 py-2 rounded-lg bg-amber-500 text-slate-950 font-bold hover:bg-amber-400 transition shadow">Guardar Comunicación</button>
           </div>
         </div>
@@ -679,30 +785,30 @@
   </div>
 
   <!-- MODAL: NUEVA ACTUACIÓN TÉCNICA -->
-  <div id="modalNewAction" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
-    <div class="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-lg overflow-hidden shadow-2xl flex flex-col">
-      <div class="px-5 py-4 border-b border-slate-800 flex items-center justify-between">
+  <div id="modalNewAction" class="fixed inset-0 bg-slate-950/70 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl w-full max-w-lg overflow-hidden shadow-2xl flex flex-col transition">
+      <div class="px-5 py-4 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
         <div>
-          <h3 class="text-sm font-bold text-white">Nueva Actuación / Compromiso</h3>
-          <p class="text-xs text-slate-400">Tarea técnica o documental requerida para la instalación IAN-R1</p>
+          <h3 class="text-sm font-bold text-slate-900 dark:text-white">Nueva Actuación / Compromiso</h3>
+          <p class="text-xs text-slate-500 dark:text-slate-400">Tarea técnica o documental requerida para la instalación IAN-R1</p>
         </div>
-        <button onclick="closeModalNewAction()" class="text-slate-400 hover:text-white text-lg">&times;</button>
+        <button onclick="closeModalNewAction()" class="text-slate-400 hover:text-slate-600 dark:hover:text-white text-lg">&times;</button>
       </div>
 
       <form id="formNewAction" onsubmit="handleSaveAction(event)" class="p-5 space-y-4 text-xs">
         <div>
-          <label class="block text-slate-300 font-medium mb-1">Título de la Actuación</label>
-          <input type="text" id="actionTitle" required placeholder="Ej. Estandarizar instructivo IN-TNU-MRN-011 tras calibración" class="w-full bg-slate-950 border border-slate-800 rounded-lg p-2 text-slate-200 focus:outline-none focus:border-amber-500">
+          <label class="block text-slate-700 dark:text-slate-300 font-medium mb-1">Título de la Actuación</label>
+          <input type="text" id="actionTitle" required placeholder="Ej. Estandarizar instructivo IN-TNU-MRN-011 tras calibración" class="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-lg p-2 text-slate-800 dark:text-slate-200 focus:outline-none focus:border-amber-500">
         </div>
 
         <div class="grid grid-cols-2 gap-3">
           <div>
-            <label class="block text-slate-300 font-medium mb-1">Documento Asociado</label>
-            <input type="text" id="actionDoc" placeholder="Ej. IN-TNU-MRN-011" class="w-full bg-slate-950 border border-slate-800 rounded-lg p-2 text-slate-200 font-mono focus:outline-none focus:border-amber-500">
+            <label class="block text-slate-700 dark:text-slate-300 font-medium mb-1">Documento Asociado</label>
+            <input type="text" id="actionDoc" placeholder="Ej. IN-TNU-MRN-011" class="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-lg p-2 text-slate-800 dark:text-slate-200 font-mono focus:outline-none focus:border-amber-500">
           </div>
           <div>
-            <label class="block text-slate-300 font-medium mb-1">Responsable Principal</label>
-            <select id="actionOwner" class="w-full bg-slate-950 border border-slate-800 rounded-lg p-2 text-slate-200 focus:outline-none focus:border-amber-500">
+            <label class="block text-slate-700 dark:text-slate-300 font-medium mb-1">Responsable Principal</label>
+            <select id="actionOwner" class="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-lg p-2 text-slate-800 dark:text-slate-200 focus:outline-none focus:border-amber-500">
               <option value="Andrea Sánchez (OPR)">Andrea Sánchez (OPR)</option>
               <option value="Edgar Mauricio López (Supervisor)">Edgar Mauricio López (Supervisor)</option>
               <option value="Jimmy Alejandro Muñoz (Director)">Jimmy Alejandro Muñoz (Director)</option>
@@ -713,12 +819,12 @@
 
         <div class="grid grid-cols-2 gap-3">
           <div>
-            <label class="block text-slate-300 font-medium mb-1">Fecha Límite Estimada</label>
-            <input type="date" id="actionDeadline" class="w-full bg-slate-950 border border-slate-800 rounded-lg p-2 text-slate-200 focus:outline-none focus:border-amber-500">
+            <label class="block text-slate-700 dark:text-slate-300 font-medium mb-1">Fecha Límite Estimada</label>
+            <input type="date" id="actionDeadline" class="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-lg p-2 text-slate-800 dark:text-slate-200 focus:outline-none focus:border-amber-500">
           </div>
           <div>
-            <label class="block text-slate-300 font-medium mb-1">Prioridad</label>
-            <select id="actionPriority" class="w-full bg-slate-950 border border-slate-800 rounded-lg p-2 text-slate-200 focus:outline-none focus:border-amber-500">
+            <label class="block text-slate-700 dark:text-slate-300 font-medium mb-1">Prioridad</label>
+            <select id="actionPriority" class="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-lg p-2 text-slate-800 dark:text-slate-200 focus:outline-none focus:border-amber-500">
               <option value="ALTA">Alta (Condicionante Operativo)</option>
               <option value="MEDIA">Media (Trámite Ordinario)</option>
               <option value="BAJA">Baja (Revisión Preventiva)</option>
@@ -727,12 +833,12 @@
         </div>
 
         <div>
-          <label class="block text-slate-300 font-medium mb-1">Descripción y Requisitos de Cierre</label>
-          <textarea id="actionDesc" rows="3" placeholder="Detalle técnico de lo que debe remitirse o verificarse ante el MME..." class="w-full bg-slate-950 border border-slate-800 rounded-lg p-2 text-slate-200 focus:outline-none focus:border-amber-500"></textarea>
+          <label class="block text-slate-700 dark:text-slate-300 font-medium mb-1">Descripción y Requisitos de Cierre</label>
+          <textarea id="actionDesc" rows="3" placeholder="Detalle técnico de lo que debe remitirse o verificarse ante el MME..." class="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-lg p-2 text-slate-800 dark:text-slate-200 focus:outline-none focus:border-amber-500"></textarea>
         </div>
 
-        <div class="pt-3 border-t border-slate-800 flex justify-end gap-2">
-          <button type="button" onclick="closeModalNewAction()" class="px-3 py-1.5 rounded-lg bg-slate-800 text-slate-300 hover:bg-slate-700 transition">Cancelar</button>
+        <div class="pt-3 border-t border-slate-100 dark:border-slate-800 flex justify-end gap-2">
+          <button type="button" onclick="closeModalNewAction()" class="px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 transition">Cancelar</button>
           <button type="submit" class="px-4 py-1.5 rounded-lg bg-rose-600 text-white font-bold hover:bg-rose-500 transition shadow">Guardar Actuación</button>
         </div>
       </form>
@@ -742,10 +848,10 @@
   <!-- Toast Notification Container -->
   <div id="toastContainer" class="fixed bottom-4 right-4 z-50 space-y-2 pointer-events-none"></div>
 
-  <footer class="border-t border-slate-800/80 bg-slate-950 py-4 text-center text-xs text-slate-500">
+  <footer class="border-t border-slate-200 dark:border-slate-800/80 bg-white dark:bg-slate-950 py-4 text-center text-xs text-slate-500 dark:text-slate-500 transition-colors">
     <div class="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-2">
       <span>Sistema Integrado de Control Regulatorio • <strong>Reactor Nuclear de Investigación IAN-R1</strong></span>
-      <span class="font-mono text-[11px] text-slate-400">Res. 18-1475/2004 • Res. 18-1434/2002 • Licencia LO-MME-013-2025-M2</span>
+      <span class="font-mono text-[11px] text-slate-500 dark:text-slate-400">Res. 18-1475/2004 • Res. 18-1434/2002 • Licencia LO-MME-013-2025-M2</span>
     </div>
   </footer>
 
@@ -870,7 +976,37 @@ REGLAS OBLIGATORIAS:
     let communications = [];
     let technicalActions = [];
 
+    function initTheme() {
+      const savedTheme = localStorage.getItem('ianr1_theme') || 'dark';
+      applyTheme(savedTheme);
+    }
+
+    function applyTheme(theme) {
+      const root = document.documentElement;
+      const icon = document.getElementById('themeToggleIcon');
+      const text = document.getElementById('themeToggleText');
+
+      if (theme === 'light') {
+        root.classList.remove('dark');
+        if (icon) icon.textContent = '🌙';
+        if (text) text.textContent = 'Modo Oscuro';
+      } else {
+        root.classList.add('dark');
+        if (icon) icon.textContent = '☀️';
+        if (text) text.textContent = 'Modo Día';
+      }
+      localStorage.setItem('ianr1_theme', theme);
+    }
+
+    function toggleTheme() {
+      const isDark = document.documentElement.classList.contains('dark');
+      applyTheme(isDark ? 'light' : 'dark');
+      showToast(isDark ? 'Modo Día activado' : 'Modo Oscuro activado', 'info');
+    }
+
     function initApp() {
+      initTheme();
+
       const storedComm = localStorage.getItem(STORAGE_KEY_COMM);
       const storedActs = localStorage.getItem(STORAGE_KEY_ACTIONS);
 
@@ -905,9 +1041,23 @@ REGLAS OBLIGATORIAS:
       if (diffMs > 0) {
         const days = Math.floor(diffMs / (1000 * 60 * 60 * 24));
         const months = Math.floor(days / 30.4375);
-        document.getElementById('countdownLicense').textContent = `Faltan ${days} días (~${months} meses)`;
+        const countdownStr = `${days} días (~${months} meses)`;
+        const countdownEl = document.getElementById('countdownLicense');
+        if (countdownEl) countdownEl.textContent = countdownStr;
+        const kpiLicenseCountdown = document.getElementById('kpiLicenseCountdown');
+        if (kpiLicenseCountdown) kpiLicenseCountdown.textContent = countdownStr;
+
+        // Progress of 5-year license (24-Jul-2025 to 23-Jul-2030 = 1825 days)
+        const startDate = new Date('2025-07-24T00:00:00');
+        const totalDuration = expiryDate - startDate;
+        const elapsed = now - startDate;
+        const pct = Math.min(100, Math.max(0, Math.round((elapsed / totalDuration) * 100)));
+        const timelineBar = document.getElementById('kpiLicenseTimelineBar');
+        if (timelineBar) timelineBar.style.width = `${pct}%`;
       } else {
-        document.getElementById('countdownLicense').textContent = 'LICENCIA VENCIDA (Requiere Renovación)';
+        const expiredStr = 'LICENCIA VENCIDA (Requiere Renovación)';
+        if (document.getElementById('countdownLicense')) document.getElementById('countdownLicense').textContent = expiredStr;
+        if (document.getElementById('kpiLicenseCountdown')) document.getElementById('kpiLicenseCountdown').textContent = expiredStr;
       }
     }
 
@@ -919,27 +1069,129 @@ REGLAS OBLIGATORIAS:
         if (el && btn) {
           if (t === tabId) {
             el.classList.remove('hidden');
-            btn.classList.add('border-amber-500', 'text-amber-400');
-            btn.classList.remove('border-transparent', 'text-slate-400');
+            btn.className = 'px-4 py-2.5 border-b-2 border-amber-500 text-amber-600 dark:text-amber-400 flex items-center gap-2 transition font-semibold';
           } else {
             el.classList.add('hidden');
-            btn.classList.remove('border-amber-500', 'text-amber-400');
-            btn.classList.add('border-transparent', 'text-slate-400');
+            btn.className = 'px-4 py-2.5 border-b-2 border-transparent text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 flex items-center gap-2 transition font-medium';
           }
         }
       });
     }
 
     function renderDashboard() {
-      document.getElementById('statTotalComm').textContent = communications.length;
-      
+      // Basic counts
+      const totalComm = communications.length;
+      const inboundComm = communications.filter(c => c.type === 'ENTRADA').length;
+      const outboundComm = communications.filter(c => c.type === 'SALIDA').length;
+      const closedComm = communications.filter(c => c.status === 'CERRADO').length;
+      const closedRate = totalComm > 0 ? Math.round((closedComm / totalComm) * 100) : 100;
+
+      const totalActs = technicalActions.length;
       const pendingActions = technicalActions.filter(a => a.status === 'PENDIENTE');
       const completedActions = technicalActions.filter(a => a.status === 'COMPLETADO');
-      
-      document.getElementById('statPendingActions').textContent = pendingActions.length;
-      document.getElementById('statCompletedActions').textContent = completedActions.length;
-      
-      // Count unique affected docs
+      const highPending = pendingActions.filter(a => a.priority === 'ALTA').length;
+      const medPending = pendingActions.filter(a => a.priority === 'MEDIA').length;
+      const lowPending = pendingActions.filter(a => a.priority === 'BAJA').length;
+
+      const compliancePercent = totalActs > 0 ? Math.round((completedActions.length / totalActs) * 100) : 100;
+
+      // Update KPI 1 (Compliance)
+      const compPctEl = document.getElementById('statCompliancePercent');
+      if (compPctEl) compPctEl.textContent = `${compliancePercent}%`;
+      const compBarEl = document.getElementById('statComplianceBar');
+      if (compBarEl) {
+        compBarEl.style.width = `${compliancePercent}%`;
+        if (compliancePercent >= 80) compBarEl.className = 'bg-emerald-500 h-2 rounded-full transition-all duration-500';
+        else if (compliancePercent >= 50) compBarEl.className = 'bg-amber-500 h-2 rounded-full transition-all duration-500';
+        else compBarEl.className = 'bg-rose-500 h-2 rounded-full transition-all duration-500';
+      }
+
+      const compTagEl = document.getElementById('statComplianceTag');
+      if (compTagEl) {
+        if (compliancePercent >= 80) {
+          compTagEl.textContent = 'Al Día';
+          compTagEl.className = 'px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30';
+        } else if (compliancePercent >= 50) {
+          compTagEl.textContent = 'Atención Preventiva';
+          compTagEl.className = 'px-2 py-0.5 rounded text-[10px] font-bold bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/30';
+        } else {
+          compTagEl.textContent = 'Crítico';
+          compTagEl.className = 'px-2 py-0.5 rounded text-[10px] font-bold bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/30';
+        }
+      }
+
+      const compDetailEl = document.getElementById('statComplianceDetail');
+      if (compDetailEl) compDetailEl.textContent = `${completedActions.length} completadas de ${totalActs} registradas`;
+
+      // Update KPI 2 (Pending Actions)
+      const pendCountEl = document.getElementById('kpiPendingCount');
+      if (pendCountEl) pendCountEl.textContent = pendingActions.length;
+      if (document.getElementById('kpiHighCount')) document.getElementById('kpiHighCount').textContent = highPending;
+      if (document.getElementById('kpiMedCount')) document.getElementById('kpiMedCount').textContent = medPending;
+      if (document.getElementById('kpiLowCount')) document.getElementById('kpiLowCount').textContent = lowPending;
+
+      // Find earliest deadline
+      const sortedDeadlines = pendingActions
+        .filter(a => a.deadline)
+        .sort((a, b) => new Date(a.deadline) - new Date(b.deadline));
+      const nextDeadlineEl = document.getElementById('kpiNextDeadlineText');
+      if (nextDeadlineEl) {
+        if (sortedDeadlines.length > 0) {
+          nextDeadlineEl.innerHTML = `Próximo plazo: <strong class="text-rose-600 dark:text-rose-400 font-mono">${sortedDeadlines[0].deadline}</strong>`;
+        } else {
+          nextDeadlineEl.textContent = 'Sin plazos urgentes pendientes';
+        }
+      }
+
+      // Update KPI 3 (Communications Flow)
+      if (document.getElementById('kpiTotalComm')) document.getElementById('kpiTotalComm').textContent = totalComm;
+      if (document.getElementById('kpiInboundComm')) document.getElementById('kpiInboundComm').textContent = inboundComm;
+      if (document.getElementById('kpiOutboundComm')) document.getElementById('kpiOutboundComm').textContent = outboundComm;
+      if (document.getElementById('kpiClosedRate')) document.getElementById('kpiClosedRate').textContent = `${closedRate}%`;
+
+      // Update badges in tabs
+      const countCommBadge = document.getElementById('countCommBadge');
+      if (countCommBadge) countCommBadge.textContent = totalComm;
+      const countPendingBadge = document.getElementById('countPendingBadge');
+      if (countPendingBadge) countPendingBadge.textContent = pendingActions.length;
+
+      // Owners Breakdown
+      const ownersMap = {};
+      technicalActions.forEach(a => {
+        const owner = a.owner || 'Sin asignar';
+        if (!ownersMap[owner]) ownersMap[owner] = { total: 0, completed: 0, pending: 0 };
+        ownersMap[owner].total++;
+        if (a.status === 'COMPLETADO') ownersMap[owner].completed++;
+        else ownersMap[owner].pending++;
+      });
+
+      const ownersListEl = document.getElementById('kpiOwnersList');
+      if (ownersListEl) {
+        ownersListEl.innerHTML = '';
+        const ownerNames = Object.keys(ownersMap);
+        if (ownerNames.length === 0) {
+          ownersListEl.innerHTML = '<div class="text-slate-500 text-xs text-center py-2">No hay responsables asignados</div>';
+        } else {
+          ownerNames.forEach(owner => {
+            const data = ownersMap[owner];
+            const pct = Math.round((data.completed / data.total) * 100);
+            const item = document.createElement('div');
+            item.className = 'space-y-1';
+            item.innerHTML = `
+              <div class="flex items-center justify-between text-xs">
+                <span class="font-medium text-slate-800 dark:text-slate-200 truncate max-w-[180px]">${escapeHtml(owner)}</span>
+                <span class="text-slate-500 dark:text-slate-400 font-mono text-[11px]">${data.completed}/${data.total} (${pct}%)</span>
+              </div>
+              <div class="w-full bg-slate-100 dark:bg-slate-800 rounded-full h-1.5 overflow-hidden">
+                <div class="bg-amber-500 h-1.5 rounded-full" style="width: ${pct}%"></div>
+              </div>
+            `;
+            ownersListEl.appendChild(item);
+          });
+        }
+      }
+
+      // Affected Docs Breakdown
       const docsSet = new Set();
       communications.forEach(c => {
         if (c.docs && Array.isArray(c.docs)) {
@@ -949,48 +1201,67 @@ REGLAS OBLIGATORIAS:
       technicalActions.forEach(a => {
         if (a.doc) docsSet.add(a.doc.trim());
       });
-      document.getElementById('statDocsAffected').textContent = docsSet.size;
 
-      // Update badges in tabs
-      document.getElementById('countCommBadge').textContent = communications.length;
-      document.getElementById('countPendingBadge').textContent = pendingActions.length;
-
-      // Render top pending in dashboard
-      const listEl = document.getElementById('dashboardPendingList');
-      listEl.innerHTML = '';
-
-      if (pendingActions.length === 0) {
-        listEl.innerHTML = `<div class="p-4 bg-slate-950/40 rounded-lg text-center text-xs text-slate-500">No hay actuaciones pendientes registradas. ¡Instalación al día!</div>`;
-        return;
+      const kpiDocsList = document.getElementById('kpiDocsList');
+      if (kpiDocsList) {
+        kpiDocsList.innerHTML = '';
+        if (docsSet.size === 0) {
+          kpiDocsList.innerHTML = '<span class="text-slate-500 text-xs">Ninguno registrado</span>';
+        } else {
+          docsSet.forEach(doc => {
+            const span = document.createElement('span');
+            span.className = 'inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-slate-100 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-[11px] font-mono text-slate-700 dark:text-slate-300';
+            span.textContent = doc;
+            kpiDocsList.appendChild(span);
+          });
+        }
       }
 
-      pendingActions.slice(0, 4).forEach(action => {
-        const item = document.createElement('div');
-        item.className = 'p-3 bg-slate-950/80 rounded-lg border border-slate-800/90 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 text-xs';
-        
-        const priorityColor = action.priority === 'ALTA' 
-          ? 'bg-rose-500/20 text-rose-300 border-rose-500/30' 
-          : 'bg-amber-500/20 text-amber-300 border-amber-500/30';
+      // Render Pending list in dashboard with optional filter
+      const filterVal = document.getElementById('kpiActionFilter')?.value || 'ALL';
+      let filteredPending = pendingActions;
+      if (filterVal === 'ALTA') {
+        filteredPending = pendingActions.filter(a => a.priority === 'ALTA');
+      } else if (filterVal === 'MEDIA') {
+        filteredPending = pendingActions.filter(a => a.priority === 'MEDIA' || a.priority === 'BAJA');
+      }
 
-        item.innerHTML = `
-          <div class="space-y-1">
-            <div class="flex items-center gap-2">
-              <span class="text-[10px] font-bold px-2 py-0.5 rounded border ${priorityColor}">${action.priority}</span>
-              <span class="font-semibold text-slate-100">${escapeHtml(action.title)}</span>
+      const listEl = document.getElementById('dashboardPendingList');
+      if (listEl) {
+        listEl.innerHTML = '';
+        if (filteredPending.length === 0) {
+          listEl.innerHTML = `<div class="p-4 bg-slate-50 dark:bg-slate-950/40 rounded-xl text-center text-xs text-slate-500">No hay actuaciones pendientes en este criterio. ¡Instalación al día!</div>`;
+          return;
+        }
+
+        filteredPending.slice(0, 5).forEach(action => {
+          const item = document.createElement('div');
+          item.className = 'p-3 bg-slate-50 dark:bg-slate-950/80 rounded-xl border border-slate-200 dark:border-slate-800/90 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs transition';
+          
+          const priorityColor = action.priority === 'ALTA' 
+            ? 'bg-rose-500/10 text-rose-600 dark:text-rose-300 border-rose-500/30' 
+            : 'bg-amber-500/10 text-amber-600 dark:text-amber-300 border-amber-500/30';
+
+          item.innerHTML = `
+            <div class="space-y-1 flex-1">
+              <div class="flex items-center gap-2">
+                <span class="text-[10px] font-bold px-2 py-0.5 rounded border ${priorityColor}">${action.priority}</span>
+                <span class="font-semibold text-slate-900 dark:text-slate-100">${escapeHtml(action.title)}</span>
+              </div>
+              <p class="text-[11px] text-slate-600 dark:text-slate-400">${escapeHtml(action.desc)}</p>
+              <div class="flex flex-wrap items-center gap-3 text-[10px] text-slate-500 dark:text-slate-500 font-mono">
+                <span>📄 Doc: <strong class="text-slate-700 dark:text-slate-300">${escapeHtml(action.doc || 'General')}</strong></span>
+                <span>👤 Resp: <strong class="text-slate-700 dark:text-slate-300">${escapeHtml(action.owner)}</strong></span>
+                <span>📅 Plazo: <strong class="text-amber-600 dark:text-amber-400">${action.deadline || 'Por definir'}</strong></span>
+              </div>
             </div>
-            <p class="text-[11px] text-slate-400">${escapeHtml(action.desc)}</p>
-            <div class="flex items-center gap-3 text-[10px] text-slate-500 font-mono">
-              <span>📄 Doc: <strong class="text-slate-300">${escapeHtml(action.doc || 'General')}</strong></span>
-              <span>👤 Resp: <strong class="text-slate-300">${escapeHtml(action.owner)}</strong></span>
-              <span>📅 Plazo: <strong class="text-amber-400">${action.deadline || 'Por definir'}</strong></span>
-            </div>
-          </div>
-          <button onclick="markActionCompleted('${action.id}')" class="px-2.5 py-1 bg-emerald-600/30 hover:bg-emerald-600/50 text-emerald-300 border border-emerald-500/30 rounded text-[11px] font-semibold whitespace-nowrap transition">
-            ✓ Completar
-          </button>
-        `;
-        listEl.appendChild(item);
-      });
+            <button onclick="markActionCompleted('${action.id}')" class="px-2.5 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded text-[11px] font-semibold whitespace-nowrap transition shadow-sm">
+              ✓ Completar
+            </button>
+          `;
+          listEl.appendChild(item);
+        });
+      }
     }
 
     function renderCommunicationsTable() {
@@ -1681,6 +1952,116 @@ Responde con la estructura estricta:
       document.getElementById('commSubject').value = currentAnalysisCache.subject;
       document.getElementById('commActionsReq').value = '• ' + currentAnalysisCache.actionsReq;
       document.getElementById('commStatus').value = 'PENDIENTE';
+    }
+
+    function copyExecutiveSummaryText() {
+      const el = document.getElementById('aiExecutiveSummaryText');
+      if (!el) return;
+      const text = el.innerText || el.textContent;
+      navigator.clipboard.writeText(text).then(() => {
+        showToast('Minuta de resumen ejecutivo copiada', 'success');
+      }).catch(() => {
+        showToast('Texto copiado al portapapeles', 'info');
+      });
+    }
+
+    function copyKpiSummary() {
+      const totalActs = technicalActions.length;
+      const completed = technicalActions.filter(a => a.status === 'COMPLETADO').length;
+      const pending = technicalActions.filter(a => a.status === 'PENDIENTE');
+      const high = pending.filter(a => a.priority === 'ALTA').length;
+      const med = pending.filter(a => a.priority === 'MEDIA').length;
+      const low = pending.filter(a => a.priority === 'BAJA').length;
+      const compliance = totalActs > 0 ? Math.round((completed / totalActs) * 100) : 100;
+
+      const summaryText = `══════════════════════════════════════════════════════
+FICHA EJECUTIVA DE INDICADORES (KPIS) REGULATORIOS
+INSTALACIÓN: Reactor Nuclear de Investigación IAN-R1 (SGC)
+LICENCIA: LO-MME-013-2025-M2 (Vigencia al 23-Jul-2030)
+MARCO LEGAL: Res. 18-1475 de 2004 y Res. 18-1434 de 2002
+FECHA REPORTE: ${new Date().toLocaleDateString('es-CO')}
+══════════════════════════════════════════════════════
+
+1. ÍNDICE GLOBAL DE CUMPLIMIENTO: ${compliance}%
+   - Compromisos Completados: ${completed} / ${totalActs}
+   - Estado: ${compliance >= 80 ? 'CONFORME (AL DÍA)' : compliance >= 50 ? 'ATENCIÓN PREVENTIVA' : 'CRÍTICO'}
+
+2. MATRIZ DE COMPROMISOS TÉCNICOS:
+   - Actuaciones Pendientes Totales: ${pending.length}
+   - Prioridad Alta (Condicionante): ${high}
+   - Prioridad Media / Baja: ${med + low}
+
+3. TRAZABILIDAD MME ⇄ SGC:
+   - Total Comunicaciones Oficiales: ${communications.length}
+   - Entradas (MME / Externo): ${communications.filter(c => c.type === 'ENTRADA').length}
+   - Salidas (SGC / IAN-R1): ${communications.filter(c => c.type === 'SALIDA').length}
+   - Tasa de Resolución / Cierre: ${communications.length > 0 ? Math.round((communications.filter(c => c.status === 'CERRADO').length / communications.length) * 100) : 100}%
+
+4. HITOS REGULATORIOS OBLIGATORIOS:
+   - Vencimiento Licencia: 23 de Julio de 2030
+   - Límite Radicación Renovación: 23 de Enero de 2030 (Art. 49)
+   - Próxima Inspección Semestral MME: Semestre II - 2026 (Art. 46)
+   - Próximo Informe Anual Obligatorio: Primeros 15 días hábiles de Enero 2027 (Art. 21)
+══════════════════════════════════════════════════════`;
+
+      navigator.clipboard.writeText(summaryText).then(() => {
+        const icon = document.getElementById('kpiCopyIcon');
+        const text = document.getElementById('kpiCopyText');
+        if (icon) icon.textContent = '✓';
+        if (text) text.textContent = '¡Ficha Copiada!';
+        setTimeout(() => {
+          if (icon) icon.textContent = '📋';
+          if (text) text.textContent = 'Copiar Ficha KPIs';
+        }, 2000);
+        showToast('Ficha de indicadores copiada al portapapeles', 'success');
+      }).catch(() => {
+        showToast('No se pudo copiar automáticamente', 'warning');
+      });
+    }
+
+    async function generateExecutiveSummaryWithAI() {
+      showToast('Sintetizando diagnóstico ejecutivo con Gemini AI...', 'info');
+
+      const totalActs = technicalActions.length;
+      const completed = technicalActions.filter(a => a.status === 'COMPLETADO').length;
+      const pending = technicalActions.filter(a => a.status === 'PENDIENTE');
+      const highPending = pending.filter(a => a.priority === 'ALTA').map(a => a.title).join('; ');
+
+      const prompt = `Como Evaluador Regulatorio IAN-R1 del SGC, genera una síntesis ejecutiva oficial concisa de 2 párrafos para la Dirección Técnica de Asuntos Nucleares con los siguientes datos actuales de la instalación:
+- Licencia: LO-MME-013-2025-M2 vigente hasta 23-Jul-2030.
+- Cumplimiento de compromisos: ${completed} de ${totalActs} cerrados (${totalActs > 0 ? Math.round(completed/totalActs*100) : 100}%).
+- Tareas críticas pendientes: ${highPending || 'Ninguna de alta prioridad'}.
+- Situación de equipos: suspensión operativa preventiva del detector de aerosoles por compatibilidad de fuentes Sr-90 / Am-241, actualización de instructivo de control de acceso IN-TNU-MRN-016 con QR.
+- Personal: Andrea Sánchez Galindo (OPR con independencia garantizada frente a LAAN), Edgar Mauricio López (Supervisor), Jimmy Muñoz Rocha (Director SGC).
+Responde directamente en 2 párrafos formales con viñetas en formato HTML (<p>, <strong>, <ul>, <li>).`;
+
+      try {
+        const payload = {
+          contents: [{ role: "user", parts: [{ text: prompt }] }],
+          systemInstruction: { parts: [{ text: GEMINI_SYSTEM_INSTRUCTION }] }
+        };
+
+        const res = await callGeminiAPI(payload);
+        const text = res?.candidates?.[0]?.content?.parts?.[0]?.text;
+        if (text) {
+          const el = document.getElementById('aiExecutiveSummaryText');
+          if (el) {
+            el.innerHTML = text.replace(/```html/g, '').replace(/```/g, '');
+          }
+          showToast('Síntesis ejecutiva actualizada con Gemini AI', 'success');
+          return;
+        }
+      } catch (err) {
+        // Fallback to local executive generator
+        const el = document.getElementById('aiExecutiveSummaryText');
+        if (el) {
+          el.innerHTML = `
+            <p><strong>Licencia de Operación LO-MME-013-2025-M2:</strong> Conforme con vigencia al 23 de julio de 2030. Modificación M2 formalizada ante el Ministerio de Minas y Energía con garantía de independencia técnica para la OPR Andrea Sánchez Galindo.</p>
+            <p><strong>Estado Operativo y Compromisos Inmediatos:</strong> De ${totalActs} actuaciones registradas, ${pending.length} se encuentran en trámite activo (${pending.filter(a=>a.priority==='ALTA').length} de prioridad alta). Se mantiene suspensión preventiva del detector de aerosoles a la espera de fuentes compatibles Sr-90 / Am-241 y se consolida la actualización del instructivo de acceso IN-TNU-MRN-016 versión 09 con validación biométrica y QR.</p>
+          `;
+        }
+        showToast('Diagnóstico ejecutivo consolidado localmente', 'info');
+      }
     }
 
     function exportDataJSON() {
