@@ -1,0 +1,1766 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sistema de Gestión y Control Regulatorio - Reactor IAN-R1</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace'],
+          },
+          colors: {
+            nuclear: {
+              50: '#f0fdf4',
+              100: '#dcfce7',
+              500: '#22c55e',
+              600: '#16a34a',
+              700: '#15803d',
+              900: '#14532d',
+            },
+            mme: {
+              50: '#f8fafc',
+              800: '#1e293b',
+              900: '#0f172a',
+              gold: '#d97706',
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: #0f172a;
+      color: #f8fafc;
+    }
+    .custom-scrollbar::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-track {
+      background: #1e293b;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+      background: #475569;
+      border-radius: 4px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+      background: #64748b;
+    }
+    .badge-pulse {
+      animation: pulse-glow 2s infinite;
+    }
+    @keyframes pulse-glow {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.75; transform: scale(1.03); }
+    }
+  </style>
+</head>
+<body class="min-h-screen bg-slate-950 text-slate-100 flex flex-col antialiased selection:bg-amber-500 selection:text-slate-950">
+
+  <header class="border-b border-slate-800 bg-slate-900/90 backdrop-blur sticky top-0 z-40">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-500 to-yellow-600 flex items-center justify-center shadow-lg shadow-amber-500/20 text-slate-950 font-black text-xl">
+          ☢
+        </div>
+        <div>
+          <div class="flex items-center gap-2">
+            <span class="font-bold text-lg text-white tracking-tight">IAN-R1 Regulator</span>
+            <span class="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">LO-MME-013-2025-M2</span>
+          </div>
+          <p class="text-xs text-slate-400">Control de Comunicaciones y Compromisos Regulatorios (MME - SGC)</p>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-3">
+        <div class="hidden md:flex flex-col text-right">
+          <span class="text-xs text-slate-400 font-medium">Vigencia Licencia: <strong class="text-amber-400 font-mono">23-Jul-2030</strong></span>
+          <span id="countdownLicense" class="text-[11px] font-mono text-emerald-400">Calculando plazo...</span>
+        </div>
+        <button onclick="openModalNewComm()" class="bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold px-3.5 py-2 rounded-lg text-xs transition flex items-center gap-2 shadow-md hover:shadow-amber-500/25">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+          Nueva Comunicación
+        </button>
+      </div>
+    </div>
+
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex space-x-1 border-t border-slate-800/60 overflow-x-auto text-xs font-semibold">
+      <button onclick="switchTab('dashboard')" id="tabBtn-dashboard" class="px-4 py-2.5 border-b-2 border-amber-500 text-amber-400 flex items-center gap-2 transition">
+        <span>📊 Panel de Control</span>
+      </button>
+      <button onclick="switchTab('communications')" id="tabBtn-communications" class="px-4 py-2.5 border-b-2 border-transparent text-slate-400 hover:text-slate-200 flex items-center gap-2 transition">
+        <span>📬 Histórico Comunicaciones</span>
+        <span id="countCommBadge" class="bg-slate-800 px-1.5 py-0.5 rounded-full text-[10px] text-slate-300">0</span>
+      </button>
+      <button onclick="switchTab('actions')" id="tabBtn-actions" class="px-4 py-2.5 border-b-2 border-transparent text-slate-400 hover:text-slate-200 flex items-center gap-2 transition">
+        <span>📋 Actuaciones Técnicas</span>
+        <span id="countPendingBadge" class="bg-rose-500/20 text-rose-400 px-1.5 py-0.5 rounded-full text-[10px] border border-rose-500/30">0</span>
+      </button>
+      <button onclick="switchTab('regulatory')" id="tabBtn-regulatory" class="px-4 py-2.5 border-b-2 border-transparent text-slate-400 hover:text-slate-200 flex items-center gap-2 transition">
+        <span>⏱ Ciclos Periódicos (Res. 18-1475)</span>
+      </button>
+      <button onclick="switchTab('analyzer')" id="tabBtn-analyzer" class="px-4 py-2.5 border-b-2 border-transparent text-slate-400 hover:text-slate-200 flex items-center gap-2 transition">
+        <span>🧠 Evaluador y Redactor IA (Gemini)</span>
+      </button>
+    </div>
+  </header>
+
+  <main class="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 lg:p-8 space-y-6">
+
+    <!-- ========================================================================= -->
+    <!-- TAB 1: DASHBOARD -->
+    <!-- ========================================================================= -->
+    <section id="tab-dashboard" class="space-y-6">
+      
+      <!-- Banner de Alertas Críticas Regulatorias -->
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        
+        <!-- Vencimiento Licencia -->
+        <div class="bg-slate-900/80 border border-slate-800 rounded-xl p-4 relative overflow-hidden flex flex-col justify-between">
+          <div class="absolute -right-4 -bottom-4 text-slate-800/30 text-8xl font-black select-none pointer-events-none">2030</div>
+          <div>
+            <div class="flex items-center justify-between text-xs text-slate-400 mb-1">
+              <span class="uppercase tracking-wider font-semibold">Licencia LO-MME-013-2025-M2</span>
+              <span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-amber-500/10 text-amber-400 border border-amber-500/30">Vigente</span>
+            </div>
+            <div class="text-2xl font-black text-white mt-1">23 de Julio de 2030</div>
+            <p class="text-xs text-slate-400 mt-1">Límite obligatorio para radicar renovación: <strong>23 de Enero de 2030</strong> (6 meses antes conforme al Art. 49, Res. 18-1475).</p>
+          </div>
+          <div class="mt-4 pt-3 border-t border-slate-800 text-[11px] text-amber-300/80 flex items-center gap-1.5 font-mono">
+            <span>⚠ Alerta: Renovación requiere mínimo 6 meses de anticipación.</span>
+          </div>
+        </div>
+
+        <!-- Próxima Inspección Semestral MME -->
+        <div class="bg-slate-900/80 border border-slate-800 rounded-xl p-4 relative overflow-hidden flex flex-col justify-between">
+          <div>
+            <div class="flex items-center justify-between text-xs text-slate-400 mb-1">
+              <span class="uppercase tracking-wider font-semibold">Inspecciones MME (Art. 46)</span>
+              <span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">Semestral</span>
+            </div>
+            <div class="text-2xl font-black text-white mt-1" id="dashNextInspectionDate">Semestre II - 2026</div>
+            <p class="text-xs text-slate-400 mt-1">Mandato de inspección cada seis (6) meses por la Autoridad Reguladora (Capítulo IX, Res. 18-1475).</p>
+          </div>
+          <div class="mt-4 pt-3 border-t border-slate-800 text-[11px] text-emerald-300/80 flex items-center gap-1.5 font-mono">
+            <span>🛡 Mantener al día: SAR, Libro de Operación, Dosimetría y EPP.</span>
+          </div>
+        </div>
+
+        <!-- Informes Obligatorios -->
+        <div class="bg-slate-900/80 border border-slate-800 rounded-xl p-4 relative overflow-hidden flex flex-col justify-between">
+          <div>
+            <div class="flex items-center justify-between text-xs text-slate-400 mb-1">
+              <span class="uppercase tracking-wider font-semibold">Próximo Reporte Obligatorio</span>
+              <span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-blue-500/10 text-blue-400 border border-blue-500/30">Art. 21</span>
+            </div>
+            <div class="text-2xl font-black text-white mt-1" id="dashNextReportName">Informe Anual 2026</div>
+            <p class="text-xs text-slate-400 mt-1">Plazo de entrega: <strong class="text-slate-200" id="dashNextReportDeadline">Enero 2027</strong> (primeros 15 días hábiles).</p>
+          </div>
+          <div class="mt-4 pt-3 border-t border-slate-800 text-[11px] text-blue-300/80 flex items-center gap-1.5 font-mono">
+            <span>📄 Incluir: Envejecimiento, Comités de Seguridad y Dosis.</span>
+          </div>
+        </div>
+
+      </div>
+
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div class="bg-slate-900/50 border border-slate-800/80 rounded-xl p-4">
+          <span class="text-xs text-slate-400">Total Comunicaciones</span>
+          <div class="text-2xl font-bold font-mono mt-1 text-white" id="statTotalComm">0</div>
+        </div>
+        <div class="bg-slate-900/50 border border-slate-800/80 rounded-xl p-4">
+          <span class="text-xs text-slate-400">Actuaciones Pendientes</span>
+          <div class="text-2xl font-bold font-mono mt-1 text-rose-400" id="statPendingActions">0</div>
+        </div>
+        <div class="bg-slate-900/50 border border-slate-800/80 rounded-xl p-4">
+          <span class="text-xs text-slate-400">Docs. / Instructivos Afectados</span>
+          <div class="text-2xl font-bold font-mono mt-1 text-amber-400" id="statDocsAffected">0</div>
+        </div>
+        <div class="bg-slate-900/50 border border-slate-800/80 rounded-xl p-4">
+          <span class="text-xs text-slate-400">Compromisos Completados</span>
+          <div class="text-2xl font-bold font-mono mt-1 text-emerald-400" id="statCompletedActions">0</div>
+        </div>
+      </div>
+
+      <!-- Paneles de Actuaciones Inmediatas Requeridas -->
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        
+        <!-- Lista de Actuaciones Pendientes Críticas -->
+        <div class="lg:col-span-2 bg-slate-900/70 border border-slate-800 rounded-xl p-5 space-y-4">
+          <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+            <div>
+              <h2 class="font-bold text-sm text-slate-100 flex items-center gap-2">
+                <span class="w-2.5 h-2.5 rounded-full bg-rose-500 animate-ping"></span>
+                Actuaciones Técnicas y Documentales Pendientes de la Instalación
+              </h2>
+              <p class="text-xs text-slate-400">Requerimientos derivados de comunicaciones oficiales pendientes de envío o ejecución.</p>
+            </div>
+            <button onclick="switchTab('actions')" class="text-xs text-amber-400 hover:text-amber-300 font-semibold underline">Ver todas</button>
+          </div>
+
+          <div id="dashboardPendingList" class="space-y-3">
+            <!-- Dynamic pending items loaded here -->
+          </div>
+        </div>
+
+        <!-- Personal Acreditado LO-MME-013-2025-M2 -->
+        <div class="bg-slate-900/70 border border-slate-800 rounded-xl p-5 space-y-4">
+          <div class="border-b border-slate-800 pb-3">
+            <h3 class="font-bold text-sm text-slate-100 flex items-center gap-2">
+              <span>👤</span> Personal Clave Autorizado
+            </h3>
+            <p class="text-xs text-slate-400">Verificado bajo Licencia LO-MME-013-2025-M2</p>
+          </div>
+
+          <div class="space-y-3 text-xs">
+            <div class="p-3 bg-slate-950/70 rounded-lg border border-slate-800">
+              <span class="text-[10px] text-amber-400 font-semibold uppercase tracking-wider block">Responsable Directo / Titular</span>
+              <div class="font-bold text-slate-200 mt-0.5">Jimmy Alejandro Muñoz Rocha</div>
+              <p class="text-[11px] text-slate-400">Director Técnico de Asuntos Nucleares (SGC)</p>
+            </div>
+
+            <div class="p-3 bg-slate-950/70 rounded-lg border border-slate-800">
+              <span class="text-[10px] text-emerald-400 font-semibold uppercase tracking-wider block">Oficial de Protección Radiológica (OPR)</span>
+              <div class="font-bold text-slate-200 mt-0.5">Andrea Sánchez Galindo</div>
+              <p class="text-[11px] text-slate-400">C.C. 35.536.683 • Control Dosimétrico y Zonas</p>
+            </div>
+
+            <div class="p-3 bg-slate-950/70 rounded-lg border border-slate-800">
+              <span class="text-[10px] text-blue-400 font-semibold uppercase tracking-wider block">Supervisor y Coordinador Reactor</span>
+              <div class="font-bold text-slate-200 mt-0.5">Edgar Mauricio López Rodríguez</div>
+              <p class="text-[11px] text-slate-400">Habilitado MME 2-2025-031979</p>
+            </div>
+
+            <div class="p-3 bg-slate-950/70 rounded-lg border border-slate-800">
+              <span class="text-[10px] text-purple-400 font-semibold uppercase tracking-wider block">Autoridad Reguladora (MME)</span>
+              <div class="font-bold text-slate-200 mt-0.5">Juan Pablo Parra Lozano</div>
+              <p class="text-[11px] text-slate-400">Coordinador Grupo de Asuntos Nucleares</p>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+    </section>
+
+    <!-- ========================================================================= -->
+    <!-- TAB 2: HISTÓRICO DE COMUNICACIONES -->
+    <!-- ========================================================================= -->
+    <section id="tab-communications" class="hidden space-y-6">
+      <div class="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4 bg-slate-900/60 p-4 rounded-xl border border-slate-800">
+        <div class="flex-1 flex items-center gap-2">
+          <input type="text" id="searchCommInput" oninput="renderCommunicationsTable()" placeholder="Buscar por radicado, asunto, documento..." 
+                 class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:border-amber-500">
+          <select id="filterCommType" onchange="renderCommunicationsTable()" class="bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-amber-500">
+            <option value="ALL">Todos los tipos</option>
+            <option value="ENTRADA">Entrada (MME / Externo)</option>
+            <option value="SALIDA">Salida (SGC / IAN-R1)</option>
+          </select>
+        </div>
+        <div class="flex items-center gap-2">
+          <button onclick="exportDataJSON()" class="bg-slate-800 hover:bg-slate-700 text-slate-200 px-3 py-2 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition">
+            <span>💾 Respaldar Datos</span>
+          </button>
+          <label class="bg-slate-800 hover:bg-slate-700 text-slate-200 px-3 py-2 rounded-lg text-xs font-semibold flex items-center gap-1.5 cursor-pointer transition">
+            <span>📂 Restaurar</span>
+            <input type="file" id="importFileInput" onchange="importDataJSON(event)" class="hidden" accept=".json">
+          </label>
+        </div>
+      </div>
+
+      <!-- Tabla de Comunicaciones -->
+      <div class="bg-slate-900 border border-slate-800 rounded-xl overflow-hidden shadow-xl">
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-xs">
+            <thead class="bg-slate-950/80 text-slate-400 uppercase tracking-wider font-semibold border-b border-slate-800">
+              <tr>
+                <th class="p-3.5">Tipo & Radicados</th>
+                <th class="p-3.5">Fecha</th>
+                <th class="p-3.5">Asunto & Resumen</th>
+                <th class="p-3.5">Docs / Instructivos</th>
+                <th class="p-3.5">Acción Requerida</th>
+                <th class="p-3.5">Estado</th>
+                <th class="p-3.5 text-right">Opciones</th>
+              </tr>
+            </thead>
+            <tbody id="communicationsTableBody" class="divide-y divide-slate-800 text-slate-300">
+              <!-- Rendered via JS -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========================================================================= -->
+    <!-- TAB 3: ACTUACIONES TÉCNICAS Y DOCUMENTALES -->
+    <!-- ========================================================================= -->
+    <section id="tab-actions" class="hidden space-y-6">
+      <div class="flex items-center justify-between">
+        <div>
+          <h2 class="text-lg font-bold text-white">Matriz de Compromisos y Actuaciones Pendientes</h2>
+          <p class="text-xs text-slate-400">Seguimiento a los documentos que la instalación debe actualizar, fuentes por recibir o informes por radicar ante el MME.</p>
+        </div>
+        <button onclick="openModalNewAction()" class="bg-rose-600 hover:bg-rose-500 text-white font-bold px-3 py-2 rounded-lg text-xs transition flex items-center gap-1.5 shadow-md">
+          <span>+ Agregar Actuación</span>
+        </button>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4" id="actionsCardsGrid">
+        <!-- Rendered via JS -->
+      </div>
+    </section>
+
+    <!-- ========================================================================= -->
+    <!-- TAB 4: CALENDARIO DE OBLIGACIONES REGULATORIAS PERIÓDICAS -->
+    <!-- ========================================================================= -->
+    <section id="tab-regulatory" class="hidden space-y-6">
+      <div class="bg-slate-900 border border-slate-800 rounded-xl p-5 space-y-4">
+        <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+          <div>
+            <h2 class="text-base font-bold text-white flex items-center gap-2">
+              <span class="text-amber-400">⚖</span> Obligaciones Periódicas Mandatorias (Resolución 18-1475 de 2004)
+            </h2>
+            <p class="text-xs text-slate-400">Ciclos fijos normativos que la instalación y el órgano regulador deben verificar de forma permanente.</p>
+          </div>
+          <span class="text-[11px] font-mono bg-slate-800 text-slate-300 px-2.5 py-1 rounded">MME - SGC</span>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          
+          <!-- Semestral Febrero -->
+          <div class="p-4 bg-slate-950 rounded-xl border border-slate-800 space-y-2">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-bold text-amber-400 uppercase tracking-wider">Informe Semestral I (Febrero)</span>
+              <span class="text-[10px] bg-amber-500/20 text-amber-300 px-2 py-0.5 rounded font-mono">Art. 21, Num. 1</span>
+            </div>
+            <div class="text-sm font-semibold text-slate-200">Entrega dentro de los primeros 15 días de Febrero</div>
+            <p class="text-xs text-slate-400">Informe descriptivo del funcionamiento de la instalación y las actividades más importantes del segundo semestre anterior.</p>
+            <div class="pt-2 text-[11px] text-slate-500 flex items-center justify-between border-t border-slate-900">
+              <span>Periodicidad: Anual (Cada Febrero)</span>
+              <span class="text-emerald-400 font-semibold">Obligatorio SGC</span>
+            </div>
+          </div>
+
+          <!-- Semestral Agosto -->
+          <div class="p-4 bg-slate-950 rounded-xl border border-slate-800 space-y-2">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-bold text-amber-400 uppercase tracking-wider">Informe Semestral II (Agosto)</span>
+              <span class="text-[10px] bg-amber-500/20 text-amber-300 px-2 py-0.5 rounded font-mono">Art. 21, Num. 1</span>
+            </div>
+            <div class="text-sm font-semibold text-slate-200">Entrega dentro de los primeros 15 días de Agosto</div>
+            <p class="text-xs text-slate-400">Informe sobre el funcionamiento y actividades del primer semestre en curso del reactor IAN-R1.</p>
+            <div class="pt-2 text-[11px] text-slate-500 flex items-center justify-between border-t border-slate-900">
+              <span>Periodicidad: Anual (Cada Agosto)</span>
+              <span class="text-emerald-400 font-semibold">Obligatorio SGC</span>
+            </div>
+          </div>
+
+          <!-- Anual Enero -->
+          <div class="p-4 bg-slate-950 rounded-xl border border-slate-800 space-y-2">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-bold text-blue-400 uppercase tracking-wider">Informe Anual de Operación (Enero)</span>
+              <span class="text-[10px] bg-blue-500/20 text-blue-300 px-2 py-0.5 rounded font-mono">Art. 21, Num. 2</span>
+            </div>
+            <div class="text-sm font-semibold text-slate-200">Primeros 15 días hábiles de Enero</div>
+            <p class="text-xs text-slate-400">Operación anual, modificaciones de diseño, capacitación/reentrenamiento del personal, resultados de vigilancia radiológica y controles dosimétricos.</p>
+            <div class="pt-2 text-[11px] text-slate-500 flex items-center justify-between border-t border-slate-900">
+              <span>Incluye: Programa Gestión Envejecimiento</span>
+              <span class="text-emerald-400 font-semibold">Obligatorio SGC</span>
+            </div>
+          </div>
+
+          <!-- Inspecciones Semestrales MME -->
+          <div class="p-4 bg-slate-950 rounded-xl border border-slate-800 space-y-2">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-bold text-emerald-400 uppercase tracking-wider">2 Inspecciones Semestrales MME</span>
+              <span class="text-[10px] bg-emerald-500/20 text-emerald-300 px-2 py-0.5 rounded font-mono">Art. 46</span>
+            </div>
+            <div class="text-sm font-semibold text-slate-200">Cada seis (6) meses por la Autoridad Reguladora</div>
+            <p class="text-xs text-slate-400">Verificación in situ de condiciones de seguridad nuclear, seguridad física, salvaguardias y protección radiológica. Origina actas con presunción de veracidad (Art. 45).</p>
+            <div class="pt-2 text-[11px] text-slate-500 flex items-center justify-between border-t border-slate-900">
+              <span>Soporte: Art. 44 (Obligaciones del Titular)</span>
+              <span class="text-amber-400 font-semibold">Competencia MME</span>
+            </div>
+          </div>
+
+          <!-- Simulacro de Emergencia -->
+          <div class="p-4 bg-slate-950 rounded-xl border border-slate-800 space-y-2">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-bold text-purple-400 uppercase tracking-wider">Ejercicio del Plan de Emergencias</span>
+              <span class="text-[10px] bg-purple-500/20 text-purple-300 px-2 py-0.5 rounded font-mono">Art. 37 & Res. 18-1434 Art. 105</span>
+            </div>
+            <div class="text-sm font-semibold text-slate-200">Simulacro periódico de emergencia nuclear/radiológica</div>
+            <p class="text-xs text-slate-400">Puesta a prueba de los procedimientos y asignación de responsabilidades. Debe comunicarse con antelación a la Autoridad Reguladora.</p>
+            <div class="pt-2 text-[11px] text-slate-500 flex items-center justify-between border-t border-slate-900">
+              <span>Registro: F-TNU-MRN-084 / 091 / 092</span>
+              <span class="text-emerald-400 font-semibold">Anual Recomendado</span>
+            </div>
+          </div>
+
+          <!-- SAR Revisión Quinquenal -->
+          <div class="p-4 bg-slate-950 rounded-xl border border-slate-800 space-y-2">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-bold text-rose-400 uppercase tracking-wider">Revisión del SAR (Análisis de Seguridad)</span>
+              <span class="text-[10px] bg-rose-500/20 text-rose-300 px-2 py-0.5 rounded font-mono">Art. 36</span>
+            </div>
+            <div class="text-sm font-semibold text-slate-200">Al menos una vez cada cinco (5) años</div>
+            <p class="text-xs text-slate-400">Actualización obligatoria ante modificaciones al diseño o a los límites y condiciones de operación, o vencimiento del ciclo quinquenal.</p>
+            <div class="pt-2 text-[11px] text-slate-500 flex items-center justify-between border-t border-slate-900">
+              <span>Documento: MO-TNU-MRN-003</span>
+              <span class="text-rose-400 font-semibold">Revisión Continua</span>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- ========================================================================= -->
+    <!-- TAB 5: ANALIZADOR AUTOMÁTICO DE COMUNICACIONES -->
+    <!-- ========================================================================= -->
+    <section id="tab-analyzer" class="hidden space-y-6">
+      <div class="bg-slate-900 border border-slate-800 rounded-xl p-5 space-y-5 shadow-xl">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-800 pb-4">
+          <div>
+            <div class="flex items-center gap-2">
+              <span class="p-1.5 rounded-lg bg-amber-500/10 text-amber-400 border border-amber-500/20 text-base">⚛️</span>
+              <h2 class="text-base font-bold text-white">Evaluador Regulatorio & Redactor Oficial con Gemini AI</h2>
+              <span class="text-[10px] font-mono px-2 py-0.5 rounded-full bg-purple-500/20 text-purple-300 border border-purple-500/30 font-semibold flex items-center gap-1">
+                <span class="w-1.5 h-1.5 rounded-full bg-purple-400 animate-pulse"></span> gemini-3-flash-preview
+              </span>
+            </div>
+            <p class="text-xs text-slate-400 mt-1">Análisis normativo integral del Reactor IAN-R1, dictamen de impacto en la Licencia LO-MME-013-2025-M2, extracción de compromisos y redacción automática de oficios oficiales.</p>
+          </div>
+          <div class="flex items-center gap-2">
+            <span class="text-[11px] text-slate-400 font-mono hidden md:inline">Marco: Res. 18-1475 / 18-1434</span>
+          </div>
+        </div>
+
+        <!-- Modo de Operación IA -->
+        <div class="flex gap-2 border-b border-slate-800/80 pb-2">
+          <button id="aiModeBtn-analyze" onclick="setAIMode('analyze')" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-amber-500/20 text-amber-300 border border-amber-500/30 transition">
+            🔍 Analizar Comunicación y Extraer Actuaciones
+          </button>
+          <button id="aiModeBtn-draft" onclick="setAIMode('draft')" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-800 text-slate-300 hover:text-white transition">
+            ✍️ Redactar Respuesta Oficial para MME
+          </button>
+          <button id="aiModeBtn-consult" onclick="setAIMode('consult')" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-800 text-slate-300 hover:text-white transition">
+            💬 Consulta Normativa Directa
+          </button>
+        </div>
+
+        <div class="space-y-3">
+          <div class="flex items-center justify-between">
+            <label id="aiInputLabel" class="text-xs font-semibold text-slate-300 block">Texto, Asunto o Comunicado para Análisis:</label>
+            <div class="flex gap-1.5" id="presetButtonsGroup">
+              <button onclick="loadAnalyzerPreset('aerosoles')" class="text-[10px] px-2 py-1 rounded bg-slate-800 text-slate-300 hover:bg-slate-700 transition">Caso: Fuentes Aerosoles</button>
+              <button onclick="loadAnalyzerPreset('acceso')" class="text-[10px] px-2 py-1 rounded bg-slate-800 text-slate-300 hover:bg-slate-700 transition">Caso: Instructivo Acceso QR</button>
+              <button onclick="loadAnalyzerPreset('personal')" class="text-[10px] px-2 py-1 rounded bg-slate-800 text-slate-300 hover:bg-slate-700 transition">Caso: Novedad Personal M2</button>
+            </div>
+          </div>
+
+          <textarea id="analyzerInputText" rows="5" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-xs text-slate-100 placeholder-slate-600 focus:outline-none focus:border-amber-500 font-mono leading-relaxed" 
+                    placeholder="Pega el contenido o radicado de la comunicación entrante o saliente para que Gemini evalúe el cumplimiento normativo..."></textarea>
+          
+          <div class="flex flex-wrap items-center justify-between gap-3 pt-1">
+            <div class="text-[11px] text-slate-500 flex items-center gap-1.5">
+              <span>🛡️ Verificación estricta de vigencia al 23-Jul-2030 y roles autorizados (Jimmy Muñoz Rocha / Andrea Sánchez).</span>
+            </div>
+            <button id="btnExecuteAI" onclick="executeAITask()" class="bg-gradient-to-r from-amber-500 to-yellow-600 hover:from-amber-400 hover:to-yellow-500 text-slate-950 font-bold px-4 py-2 rounded-lg text-xs transition flex items-center gap-2 shadow-lg shadow-amber-500/20 active:scale-95">
+              <span id="aiButtonIcon">⚡</span>
+              <span id="aiButtonText">Ejecutar Análisis con Gemini AI</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Indicador de Carga IA -->
+        <div id="aiLoadingIndicator" class="hidden p-6 bg-slate-950/60 rounded-xl border border-slate-800 text-center space-y-3">
+          <div class="inline-block w-8 h-8 border-4 border-amber-500/30 border-t-amber-400 rounded-full animate-spin"></div>
+          <p class="text-xs font-semibold text-amber-300" id="aiLoadingStatusText">Consultando marco regulatorio con Gemini 3 Flash...</p>
+          <p class="text-[11px] text-slate-500">Cotejando Licencia LO-MME-013-2025-M2, Resoluciones 18-1475/2004 y 18-1434/2002</p>
+        </div>
+
+        <!-- Resultados del Análisis (Estructurado) -->
+        <div id="analyzerResultsContainer" class="hidden p-5 bg-slate-950 rounded-xl border border-slate-800 space-y-5">
+          <div class="flex flex-wrap items-center justify-between gap-2 border-b border-slate-800 pb-3">
+            <div>
+              <span class="text-[10px] uppercase font-bold tracking-wider text-slate-400">Dictamen Técnico Regulatorio</span>
+              <h3 class="text-sm font-bold text-amber-400 flex items-center gap-2 mt-0.5">
+                <span>📋</span> Evaluación Oficial IAN-R1
+              </h3>
+            </div>
+            <div class="flex items-center gap-2">
+              <span id="analyzerComplianceTag" class="text-xs font-bold px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">Cumple</span>
+              <span id="analyzerSourceModel" class="text-[10px] font-mono px-2 py-0.5 rounded bg-slate-800 text-slate-400">Gemini 3 Flash</span>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
+            <!-- Sustento Legal -->
+            <div class="p-3.5 bg-slate-900/80 rounded-xl border border-slate-800/90 space-y-2">
+              <span class="text-slate-400 font-semibold uppercase tracking-wider text-[10px] flex items-center gap-1.5">
+                <span class="text-amber-400">⚖️</span> Sustento Legal y Artículos Aplicables:
+              </span>
+              <div id="analyzerNormList" class="space-y-1.5 text-slate-200 text-[11px]"></div>
+            </div>
+
+            <!-- Impacto Licencia -->
+            <div class="p-3.5 bg-slate-900/80 rounded-xl border border-slate-800/90 space-y-2">
+              <span class="text-slate-400 font-semibold uppercase tracking-wider text-[10px] flex items-center gap-1.5">
+                <span class="text-blue-400">🔍</span> Impacto en Licencia LO-MME-013-2025-M2:
+              </span>
+              <div id="analyzerLicenseImpact" class="text-slate-300 text-[11px] leading-relaxed"></div>
+              <div class="pt-2 border-t border-slate-800/80 text-[10px] text-amber-300/90 font-mono">
+                ⚠ Vigencia hasta 23-Jul-2030 (Renovación requerida 6 meses antes).
+              </div>
+            </div>
+          </div>
+
+          <!-- Actuaciones Extraídas -->
+          <div class="p-3.5 bg-slate-900/80 rounded-xl border border-slate-800/90 space-y-2">
+            <div class="flex items-center justify-between">
+              <span class="text-slate-400 font-semibold uppercase tracking-wider text-[10px] flex items-center gap-1.5">
+                <span class="text-rose-400">📌</span> Actuaciones Técnicas y Documentales que la Instalación Debe Ejecutar:
+              </span>
+              <span id="analyzerActionsCount" class="text-[10px] px-2 py-0.5 rounded bg-slate-800 text-slate-300 font-mono">0 detectadas</span>
+            </div>
+            <ul id="analyzerActionsList" class="list-disc pl-5 space-y-1.5 text-xs text-slate-200"></ul>
+          </div>
+
+          <!-- Acciones de Cierre -->
+          <div class="pt-3 border-t border-slate-800 flex flex-wrap items-center justify-between gap-3">
+            <button onclick="generateDraftFromCurrentAnalysis()" class="bg-slate-800 hover:bg-slate-700 text-amber-300 border border-amber-500/30 font-bold px-3.5 py-2 rounded-lg text-xs transition flex items-center gap-1.5">
+              <span>✍️ Redactar Oficio Oficial para este Caso</span>
+            </button>
+            <button onclick="convertAnalysisToCommunication()" class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold px-4 py-2 rounded-lg text-xs transition flex items-center gap-1.5 shadow">
+              <span>📥 Guardar como Comunicación y Crear Tareas Pendientes</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Resultados de Redacción Oficial (Borrador de Oficio) -->
+        <div id="aiDraftContainer" class="hidden p-5 bg-slate-950 rounded-xl border border-slate-800 space-y-4">
+          <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+            <div>
+              <span class="text-[10px] uppercase font-bold tracking-wider text-slate-400">Minuta Oficial Generada con Gemini</span>
+              <h3 class="text-sm font-bold text-amber-400">Oficio Formal de Respuesta para Radicación ante MME</h3>
+            </div>
+            <button onclick="copyDraftToClipboard()" class="bg-slate-800 hover:bg-slate-700 text-slate-200 px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition border border-slate-700">
+              <span id="copyBtnIcon">📋</span> <span id="copyBtnText">Copiar Texto</span>
+            </button>
+          </div>
+
+          <div class="p-4 bg-slate-900 rounded-xl border border-slate-800">
+            <pre id="aiDraftOutput" class="text-xs text-slate-200 font-mono whitespace-pre-wrap leading-relaxed max-h-96 overflow-y-auto custom-scrollbar select-text"></pre>
+          </div>
+        </div>
+
+        <!-- Resultados de Consulta Regulatoria -->
+        <div id="aiConsultContainer" class="hidden p-5 bg-slate-950 rounded-xl border border-slate-800 space-y-3">
+          <div class="border-b border-slate-800 pb-2">
+            <h3 class="text-sm font-bold text-amber-400">Respuesta Normativa del Evaluador Regulatorio IAN-R1</h3>
+          </div>
+          <div id="aiConsultOutput" class="text-xs text-slate-200 leading-relaxed space-y-2"></div>
+        </div>
+
+      </div>
+    </section>
+
+  </main>
+
+  <!-- MODAL: NUEVA COMUNICACIÓN -->
+  <div id="modalNewComm" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-2xl overflow-hidden shadow-2xl flex flex-col max-h-[90vh]">
+      
+      <div class="px-5 py-4 border-b border-slate-800 flex items-center justify-between">
+        <div>
+          <h3 class="text-sm font-bold text-white">Registrar Nueva Comunicación</h3>
+          <p class="text-xs text-slate-400">Cargar trazabilidad de entrada/salida y compromisos regulatorios</p>
+        </div>
+        <button onclick="closeModalNewComm()" class="text-slate-400 hover:text-white text-lg">&times;</button>
+      </div>
+
+      <form id="formNewComm" onsubmit="handleSaveCommunication(event)" class="p-5 space-y-4 overflow-y-auto custom-scrollbar flex-1 text-xs">
+        
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-slate-300 font-medium mb-1">Tipo de Flujo</label>
+            <select id="commFlowType" class="w-full bg-slate-950 border border-slate-800 rounded-lg p-2 text-slate-200 focus:outline-none focus:border-amber-500">
+              <option value="ENTRADA">Entrada (Desde MME u otra entidad)</option>
+              <option value="SALIDA">Salida (Desde SGC / IAN-R1)</option>
+            </select>
+          </div>
+
+          <div>
+            <label class="block text-slate-300 font-medium mb-1">Fecha de Radicación</label>
+            <input type="date" id="commDate" required class="w-full bg-slate-950 border border-slate-800 rounded-lg p-2 text-slate-200 focus:outline-none focus:border-amber-500">
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-slate-300 font-medium mb-1">Radicado MME</label>
+            <input type="text" id="commRadMME" placeholder="Ej. 1-2026-041551 ó 2-2026-037984" class="w-full bg-slate-950 border border-slate-800 rounded-lg p-2 text-slate-200 font-mono focus:outline-none focus:border-amber-500">
+          </div>
+          <div>
+            <label class="block text-slate-300 font-medium mb-1">Radicado SGC (Argo)</label>
+            <input type="text" id="commRadSGC" placeholder="Ej. 2026-800-010844-2" class="w-full bg-slate-950 border border-slate-800 rounded-lg p-2 text-slate-200 font-mono focus:outline-none focus:border-amber-500">
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-slate-300 font-medium mb-1">Asunto Oficial</label>
+          <input type="text" id="commSubject" required placeholder="Ej. Actualización de instructivo de control de acceso IN-TNU-MRN-016" class="w-full bg-slate-950 border border-slate-800 rounded-lg p-2 text-slate-200 focus:outline-none focus:border-amber-500">
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-slate-300 font-medium mb-1">Remitente</label>
+            <input type="text" id="commSender" placeholder="Ej. Jimmy Alejandro Muñoz (SGC) / Juan Pablo Parra (MME)" class="w-full bg-slate-950 border border-slate-800 rounded-lg p-2 text-slate-200 focus:outline-none focus:border-amber-500">
+          </div>
+          <div>
+            <label class="block text-slate-300 font-medium mb-1">Destinatario</label>
+            <input type="text" id="commReceiver" placeholder="Ej. Juan Pablo Parra (MME) / Jimmy Alejandro Muñoz (SGC)" class="w-full bg-slate-950 border border-slate-800 rounded-lg p-2 text-slate-200 focus:outline-none focus:border-amber-500">
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-slate-300 font-medium mb-1">Documentos, Manuales o Formatos Afectados</label>
+          <input type="text" id="commDocs" placeholder="Ej. IN-TNU-MRN-016, F-TNU-MRN-067, MO-TNU-MRN-007" class="w-full bg-slate-950 border border-slate-800 rounded-lg p-2 text-slate-200 font-mono focus:outline-none focus:border-amber-500">
+          <span class="text-[10px] text-slate-500">Separar por comas</span>
+        </div>
+
+        <div>
+          <label class="block text-slate-300 font-medium mb-1">Actuaciones Requeridas / Tareas Derivadas</label>
+          <textarea id="commActionsReq" rows="3" placeholder="¿Qué debe realizar la instalación? Ej: 1. Calibrar detector tras recibir fuentes compatibles. 2. Actualizar formatos F-TNU-MRN-060 y 063. 3. Remitir informe formal al MME." class="w-full bg-slate-950 border border-slate-800 rounded-lg p-2 text-slate-200 focus:outline-none focus:border-amber-500"></textarea>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-slate-300 font-medium mb-1">Fecha Límite para Entrega / Actuación</label>
+            <input type="date" id="commDeadline" class="w-full bg-slate-950 border border-slate-800 rounded-lg p-2 text-slate-200 focus:outline-none focus:border-amber-500">
+          </div>
+          <div>
+            <label class="block text-slate-300 font-medium mb-1">Estado de la Comunicación</label>
+            <select id="commStatus" class="w-full bg-slate-950 border border-slate-800 rounded-lg p-2 text-slate-200 focus:outline-none focus:border-amber-500">
+              <option value="PENDIENTE">Pendiente de Actuación / Respuesta</option>
+              <option value="EN_TRAMITE">En Trámite Técnico</option>
+              <option value="CERRADO">Cerrado / Incorporado</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="pt-3 border-t border-slate-800 flex justify-between items-center gap-2">
+          <button type="button" onclick="autoAnalyzeWithGeminiFromModal()" class="px-3 py-2 rounded-lg bg-purple-900/40 text-purple-300 border border-purple-500/30 hover:bg-purple-900/60 font-semibold text-xs flex items-center gap-1.5 transition">
+            <span>✨ Autocompletar Tareas con IA</span>
+          </button>
+          <div class="flex gap-2">
+            <button type="button" onclick="closeModalNewComm()" class="px-3.5 py-2 rounded-lg bg-slate-800 text-slate-300 hover:bg-slate-700 transition">Cancelar</button>
+            <button type="submit" class="px-4 py-2 rounded-lg bg-amber-500 text-slate-950 font-bold hover:bg-amber-400 transition shadow">Guardar Comunicación</button>
+          </div>
+        </div>
+
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL: NUEVA ACTUACIÓN TÉCNICA -->
+  <div id="modalNewAction" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-lg overflow-hidden shadow-2xl flex flex-col">
+      <div class="px-5 py-4 border-b border-slate-800 flex items-center justify-between">
+        <div>
+          <h3 class="text-sm font-bold text-white">Nueva Actuación / Compromiso</h3>
+          <p class="text-xs text-slate-400">Tarea técnica o documental requerida para la instalación IAN-R1</p>
+        </div>
+        <button onclick="closeModalNewAction()" class="text-slate-400 hover:text-white text-lg">&times;</button>
+      </div>
+
+      <form id="formNewAction" onsubmit="handleSaveAction(event)" class="p-5 space-y-4 text-xs">
+        <div>
+          <label class="block text-slate-300 font-medium mb-1">Título de la Actuación</label>
+          <input type="text" id="actionTitle" required placeholder="Ej. Estandarizar instructivo IN-TNU-MRN-011 tras calibración" class="w-full bg-slate-950 border border-slate-800 rounded-lg p-2 text-slate-200 focus:outline-none focus:border-amber-500">
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-slate-300 font-medium mb-1">Documento Asociado</label>
+            <input type="text" id="actionDoc" placeholder="Ej. IN-TNU-MRN-011" class="w-full bg-slate-950 border border-slate-800 rounded-lg p-2 text-slate-200 font-mono focus:outline-none focus:border-amber-500">
+          </div>
+          <div>
+            <label class="block text-slate-300 font-medium mb-1">Responsable Principal</label>
+            <select id="actionOwner" class="w-full bg-slate-950 border border-slate-800 rounded-lg p-2 text-slate-200 focus:outline-none focus:border-amber-500">
+              <option value="Andrea Sánchez (OPR)">Andrea Sánchez (OPR)</option>
+              <option value="Edgar Mauricio López (Supervisor)">Edgar Mauricio López (Supervisor)</option>
+              <option value="Jimmy Alejandro Muñoz (Director)">Jimmy Alejandro Muñoz (Director)</option>
+              <option value="Proveedor Internacional">Proveedor Internacional</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-slate-300 font-medium mb-1">Fecha Límite Estimada</label>
+            <input type="date" id="actionDeadline" class="w-full bg-slate-950 border border-slate-800 rounded-lg p-2 text-slate-200 focus:outline-none focus:border-amber-500">
+          </div>
+          <div>
+            <label class="block text-slate-300 font-medium mb-1">Prioridad</label>
+            <select id="actionPriority" class="w-full bg-slate-950 border border-slate-800 rounded-lg p-2 text-slate-200 focus:outline-none focus:border-amber-500">
+              <option value="ALTA">Alta (Condicionante Operativo)</option>
+              <option value="MEDIA">Media (Trámite Ordinario)</option>
+              <option value="BAJA">Baja (Revisión Preventiva)</option>
+            </select>
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-slate-300 font-medium mb-1">Descripción y Requisitos de Cierre</label>
+          <textarea id="actionDesc" rows="3" placeholder="Detalle técnico de lo que debe remitirse o verificarse ante el MME..." class="w-full bg-slate-950 border border-slate-800 rounded-lg p-2 text-slate-200 focus:outline-none focus:border-amber-500"></textarea>
+        </div>
+
+        <div class="pt-3 border-t border-slate-800 flex justify-end gap-2">
+          <button type="button" onclick="closeModalNewAction()" class="px-3 py-1.5 rounded-lg bg-slate-800 text-slate-300 hover:bg-slate-700 transition">Cancelar</button>
+          <button type="submit" class="px-4 py-1.5 rounded-lg bg-rose-600 text-white font-bold hover:bg-rose-500 transition shadow">Guardar Actuación</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Toast Notification Container -->
+  <div id="toastContainer" class="fixed bottom-4 right-4 z-50 space-y-2 pointer-events-none"></div>
+
+  <footer class="border-t border-slate-800/80 bg-slate-950 py-4 text-center text-xs text-slate-500">
+    <div class="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-2">
+      <span>Sistema Integrado de Control Regulatorio • <strong>Reactor Nuclear de Investigación IAN-R1</strong></span>
+      <span class="font-mono text-[11px] text-slate-400">Res. 18-1475/2004 • Res. 18-1434/2002 • Licencia LO-MME-013-2025-M2</span>
+    </div>
+  </footer>
+
+  <script>
+    // State management
+    const STORAGE_KEY_COMM = 'ianr1_regulator_communications_v1';
+    const STORAGE_KEY_ACTIONS = 'ianr1_regulator_actions_v1';
+
+    // System prompt defining the Evaluador Regulatorio IAN-R1 persona and legal framework
+    const GEMINI_SYSTEM_INSTRUCTION = `Eres el "Evaluador Regulatorio IAN-R1", asistente técnico especializado en el marco normativo nuclear colombiano para el Reactor Nuclear de Investigación IAN-R1 del Servicio Geológico Colombiano (SGC).
+FUENTES DE VERDAD OBLIGATORIAS:
+1. Licencia de Operación LO-MME-013-2025-M2 (Vigente del 24 de Julio de 2025 al 23 de Julio de 2030).
+2. Resolución MME 18-1475 de 2004 (Reglamento de Instalaciones Nucleares).
+3. Resolución MME 18-1434 de 2002 (Reglamento de Protección y Seguridad Radiológica).
+4. Resolución MME 18-0005 de 2010 (Gestión de Desechos Radiactivos).
+PERSONAL AUTORIZADO ACREDITADO EN LICENCIA:
+- Titular / Responsable Directo: Jimmy Alejandro Muñoz Rocha (Director Técnico de Asuntos Nucleares SGC).
+- Oficial de Protección Radiológica (OPR) Titular: Andrea Sánchez Galindo (independencia funcional garantizada frente al LAAN).
+- Supervisor y Coordinador del Reactor: Edgar Mauricio López Rodríguez.
+- Autoridad Reguladora: Juan Pablo Parra Lozano (Coordinador Grupo de Asuntos Nucleares, MME).
+REGLAS OBLIGATORIAS:
+- Citar con precisión los artículos específicos (ej. Res. 18-1475 Art. 21, 36, 39, 41, 46, 49; Res. 18-1434 Art. 28, 49, 50, 105).
+- Recordar que la renovación o modificación mayor debe radicarse con 6 meses de anticipación.
+- La vigencia de la licencia concluye el 23 de julio de 2030.`;
+
+    // Empty API key as required (Canvas runtime injection)
+    const apiKey = "";
+    const GEMINI_API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${apiKey}`;
+
+    // Seed Data based on real records
+    const initialCommunications = [
+      {
+        id: 'COMM-2026-001',
+        type: 'ENTRADA',
+        date: '2026-09-02',
+        radMME: '1-2026-041551',
+        radSGC: '2026-800-010844-2',
+        subject: 'Anexo instructivo IN-TNU-MRN-016 (Actualización de instructivo de control de acceso)',
+        sender: 'Jimmy Alejandro Muñoz Rocha (SGC)',
+        receiver: 'Juan Pablo Parra (MME - Grupo de Asuntos Nucleares)',
+        docs: ['IN-TNU-MRN-016', 'F-TNU-MRN-067'],
+        actionsReq: 'Recepción y cotejo del documento. Incorporar al expediente y verificar correspondencia técnica con versión 09.',
+        deadline: '2026-09-30',
+        status: 'CERRADO',
+        notes: 'Verificado cumplimiento del Art. 39 Res. 18-1475. Se generó oficio oficial de respuesta MME.'
+      },
+      {
+        id: 'COMM-2026-002',
+        type: 'ENTRADA',
+        date: '2026-08-12',
+        radMME: '1-2026-040542',
+        radSGC: '2026-840-009828-2',
+        subject: 'Novedades sobre fuentes de referencia Sr-90 y Am-241 para detector de aerosoles',
+        sender: 'Jimmy Alejandro Muñoz Rocha (SGC)',
+        receiver: 'Juan Pablo Parra (MME - Grupo de Asuntos Nucleares)',
+        docs: ['IN-TNU-MRN-011', 'F-TNU-MRN-060', 'F-TNU-MRN-063'],
+        actionsReq: '1. Recibir nuevas fuentes compatibles del proveedor. 2. Calibración in situ del detector de aerosoles. 3. Actualizar instructivos y programas de calibración. 4. Remitir dossier final al MME.',
+        deadline: '2026-11-15',
+        status: 'PENDIENTE',
+        notes: 'Operatividad y puesta en servicio formalmente suspendida hasta contar con fuentes compatibles (Res. 18-1434, Arts. 49 y 50).'
+      },
+      {
+        id: 'COMM-2026-003',
+        type: 'SALIDA',
+        date: '2026-08-01',
+        radMME: '1-2026-035120',
+        radSGC: '2026-800-009210-2',
+        subject: 'Remisión Informe Semestral de Operación y Funcionamiento (I Semestre 2026)',
+        sender: 'Jimmy Alejandro Muñoz Rocha (SGC)',
+        receiver: 'Ministerio de Minas y Energía',
+        docs: ['Informe Semestral 2026-I'],
+        actionsReq: 'Cotejo de horas de funcionamiento, dosimetría y novedades operativas.',
+        deadline: '2026-08-15',
+        status: 'CERRADO',
+        notes: 'Cumplimiento estricto del Art. 21, Numeral 1 de la Resolución 18-1475 de 2004.'
+      }
+    ];
+
+    const initialActions = [
+      {
+        id: 'ACT-001',
+        title: 'Calibración in situ del detector de aerosoles con nuevas fuentes Sr-90 / Am-241',
+        doc: 'IN-TNU-MRN-011 / F-TNU-MRN-060',
+        owner: 'Andrea Sánchez (OPR)',
+        deadline: '2026-11-15',
+        priority: 'ALTA',
+        status: 'PENDIENTE',
+        desc: 'Coordinar con fabricante internacional la recepción de las fuentes exentas de geometría compatible y ejecutar la calibración in situ para levantar la suspensión del detector.'
+      },
+      {
+        id: 'ACT-002',
+        title: 'Actualización y estandarización procedimental (IN-TNU-MRN-011, F-TNU-MRN-060 y 063)',
+        doc: 'IN-TNU-MRN-011',
+        owner: 'Edgar Mauricio López (Supervisor)',
+        deadline: '2026-12-01',
+        priority: 'ALTA',
+        status: 'PENDIENTE',
+        desc: 'Formalizar en los procedimientos del reactor los métodos de verificación periódica y calibración de aerosoles y remitirlos al MME conforme al Art. 39 de la Res. 18-1475.'
+      },
+      {
+        id: 'ACT-003',
+        title: 'Elaboración y radicación del Informe Anual 2026 (primeros 15 días hábiles Enero 2027)',
+        doc: 'Informe Anual IAN-R1',
+        owner: 'Jimmy Alejandro Muñoz (Director)',
+        deadline: '2027-01-22',
+        priority: 'MEDIA',
+        status: 'PENDIENTE',
+        desc: 'Compilar datos de operación, reentrenamiento, vigilancia dosimétrica, comités de seguridad y programa de envejecimiento (Art. 21, Num. 2, Res. 18-1475).'
+      },
+      {
+        id: 'ACT-004',
+        title: 'Seguimiento a la segunda inspección semestral regulatoria de 2026',
+        doc: 'Acta de Inspección MME',
+        owner: 'Juan Pablo Parra (MME)',
+        deadline: '2026-12-15',
+        priority: 'ALTA',
+        status: 'PENDIENTE',
+        desc: 'Coordinación y atención a la comisión de inspección del Grupo de Asuntos Nucleares (Art. 46, Res. 18-1475).'
+      }
+    ];
+
+    // State loaded from localStorage or fallback
+    let communications = [];
+    let technicalActions = [];
+
+    function initApp() {
+      const storedComm = localStorage.getItem(STORAGE_KEY_COMM);
+      const storedActs = localStorage.getItem(STORAGE_KEY_ACTIONS);
+
+      communications = storedComm ? JSON.parse(storedComm) : initialCommunications;
+      technicalActions = storedActs ? JSON.parse(storedActs) : initialActions;
+
+      updateCountdown();
+      renderDashboard();
+      renderCommunicationsTable();
+      renderActionsCards();
+
+      // Pre-fill date inputs with current date
+      const todayStr = new Date().toISOString().split('T')[0];
+      if (document.getElementById('commDate')) {
+        document.getElementById('commDate').value = todayStr;
+      }
+    }
+
+    function saveState() {
+      localStorage.setItem(STORAGE_KEY_COMM, JSON.stringify(communications));
+      localStorage.setItem(STORAGE_KEY_ACTIONS, JSON.stringify(technicalActions));
+      renderDashboard();
+      renderCommunicationsTable();
+      renderActionsCards();
+    }
+
+    function updateCountdown() {
+      const expiryDate = new Date('2030-07-23T23:59:59');
+      const now = new Date();
+      const diffMs = expiryDate - now;
+
+      if (diffMs > 0) {
+        const days = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+        const months = Math.floor(days / 30.4375);
+        document.getElementById('countdownLicense').textContent = `Faltan ${days} días (~${months} meses)`;
+      } else {
+        document.getElementById('countdownLicense').textContent = 'LICENCIA VENCIDA (Requiere Renovación)';
+      }
+    }
+
+    function switchTab(tabId) {
+      const tabs = ['dashboard', 'communications', 'actions', 'regulatory', 'analyzer'];
+      tabs.forEach(t => {
+        const el = document.getElementById(`tab-${t}`);
+        const btn = document.getElementById(`tabBtn-${t}`);
+        if (el && btn) {
+          if (t === tabId) {
+            el.classList.remove('hidden');
+            btn.classList.add('border-amber-500', 'text-amber-400');
+            btn.classList.remove('border-transparent', 'text-slate-400');
+          } else {
+            el.classList.add('hidden');
+            btn.classList.remove('border-amber-500', 'text-amber-400');
+            btn.classList.add('border-transparent', 'text-slate-400');
+          }
+        }
+      });
+    }
+
+    function renderDashboard() {
+      document.getElementById('statTotalComm').textContent = communications.length;
+      
+      const pendingActions = technicalActions.filter(a => a.status === 'PENDIENTE');
+      const completedActions = technicalActions.filter(a => a.status === 'COMPLETADO');
+      
+      document.getElementById('statPendingActions').textContent = pendingActions.length;
+      document.getElementById('statCompletedActions').textContent = completedActions.length;
+      
+      // Count unique affected docs
+      const docsSet = new Set();
+      communications.forEach(c => {
+        if (c.docs && Array.isArray(c.docs)) {
+          c.docs.forEach(d => docsSet.add(d.trim()));
+        }
+      });
+      technicalActions.forEach(a => {
+        if (a.doc) docsSet.add(a.doc.trim());
+      });
+      document.getElementById('statDocsAffected').textContent = docsSet.size;
+
+      // Update badges in tabs
+      document.getElementById('countCommBadge').textContent = communications.length;
+      document.getElementById('countPendingBadge').textContent = pendingActions.length;
+
+      // Render top pending in dashboard
+      const listEl = document.getElementById('dashboardPendingList');
+      listEl.innerHTML = '';
+
+      if (pendingActions.length === 0) {
+        listEl.innerHTML = `<div class="p-4 bg-slate-950/40 rounded-lg text-center text-xs text-slate-500">No hay actuaciones pendientes registradas. ¡Instalación al día!</div>`;
+        return;
+      }
+
+      pendingActions.slice(0, 4).forEach(action => {
+        const item = document.createElement('div');
+        item.className = 'p-3 bg-slate-950/80 rounded-lg border border-slate-800/90 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 text-xs';
+        
+        const priorityColor = action.priority === 'ALTA' 
+          ? 'bg-rose-500/20 text-rose-300 border-rose-500/30' 
+          : 'bg-amber-500/20 text-amber-300 border-amber-500/30';
+
+        item.innerHTML = `
+          <div class="space-y-1">
+            <div class="flex items-center gap-2">
+              <span class="text-[10px] font-bold px-2 py-0.5 rounded border ${priorityColor}">${action.priority}</span>
+              <span class="font-semibold text-slate-100">${escapeHtml(action.title)}</span>
+            </div>
+            <p class="text-[11px] text-slate-400">${escapeHtml(action.desc)}</p>
+            <div class="flex items-center gap-3 text-[10px] text-slate-500 font-mono">
+              <span>📄 Doc: <strong class="text-slate-300">${escapeHtml(action.doc || 'General')}</strong></span>
+              <span>👤 Resp: <strong class="text-slate-300">${escapeHtml(action.owner)}</strong></span>
+              <span>📅 Plazo: <strong class="text-amber-400">${action.deadline || 'Por definir'}</strong></span>
+            </div>
+          </div>
+          <button onclick="markActionCompleted('${action.id}')" class="px-2.5 py-1 bg-emerald-600/30 hover:bg-emerald-600/50 text-emerald-300 border border-emerald-500/30 rounded text-[11px] font-semibold whitespace-nowrap transition">
+            ✓ Completar
+          </button>
+        `;
+        listEl.appendChild(item);
+      });
+    }
+
+    function renderCommunicationsTable() {
+      const tbody = document.getElementById('communicationsTableBody');
+      const search = (document.getElementById('searchCommInput')?.value || '').toLowerCase();
+      const filterType = document.getElementById('filterCommType')?.value || 'ALL';
+
+      tbody.innerHTML = '';
+
+      const filtered = communications.filter(c => {
+        const matchesType = filterType === 'ALL' || c.type === filterType;
+        const matchesSearch = 
+          (c.radMME && c.radMME.toLowerCase().includes(search)) ||
+          (c.radSGC && c.radSGC.toLowerCase().includes(search)) ||
+          (c.subject && c.subject.toLowerCase().includes(search)) ||
+          (c.sender && c.sender.toLowerCase().includes(search)) ||
+          (c.actionsReq && c.actionsReq.toLowerCase().includes(search)) ||
+          (c.docs && c.docs.join(' ').toLowerCase().includes(search));
+        return matchesType && matchesSearch;
+      });
+
+      if (filtered.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="7" class="p-6 text-center text-slate-500">No se encontraron comunicaciones con los criterios de búsqueda.</td></tr>`;
+        return;
+      }
+
+      filtered.forEach(comm => {
+        const tr = document.createElement('tr');
+        tr.className = 'hover:bg-slate-800/40 transition border-b border-slate-800/60';
+
+        const typeBadge = comm.type === 'ENTRADA'
+          ? `<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-blue-500/20 text-blue-300 border border-blue-500/30">ENTRADA</span>`
+          : `<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-purple-500/20 text-purple-300 border border-purple-500/30">SALIDA</span>`;
+
+        let statusBadge = '';
+        if (comm.status === 'PENDIENTE') {
+          statusBadge = `<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-rose-500/20 text-rose-300 border border-rose-500/30">PENDIENTE</span>`;
+        } else if (comm.status === 'EN_TRAMITE') {
+          statusBadge = `<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-500/20 text-amber-300 border border-amber-500/30">EN TRÁMITE</span>`;
+        } else {
+          statusBadge = `<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">CERRADO</span>`;
+        }
+
+        const docsRender = (comm.docs && comm.docs.length > 0)
+          ? comm.docs.map(d => `<span class="inline-block px-1.5 py-0.5 bg-slate-950 border border-slate-800 rounded font-mono text-[10px] text-slate-300 mr-1 mb-1">${escapeHtml(d)}</span>`).join('')
+          : '<span class="text-slate-500 text-[11px]">N/A</span>';
+
+        tr.innerHTML = `
+          <td class="p-3.5 space-y-1">
+            <div>${typeBadge}</div>
+            <div class="font-mono text-[11px] text-amber-300/90 font-bold">${escapeHtml(comm.radMME || 'S/R')}</div>
+            <div class="font-mono text-[10px] text-slate-400">SGC: ${escapeHtml(comm.radSGC || 'S/R')}</div>
+          </td>
+          <td class="p-3.5 font-mono text-[11px] text-slate-300 whitespace-nowrap">${comm.date}</td>
+          <td class="p-3.5 max-w-xs">
+            <div class="font-semibold text-slate-100 text-xs">${escapeHtml(comm.subject)}</div>
+            <div class="text-[11px] text-slate-400 truncate mt-0.5">De: ${escapeHtml(comm.sender || 'N/A')}</div>
+          </td>
+          <td class="p-3.5 max-w-[140px]">${docsRender}</td>
+          <td class="p-3.5 max-w-xs text-[11px] text-slate-300">
+            <div class="line-clamp-2">${escapeHtml(comm.actionsReq || 'Ninguna especificada')}</div>
+            ${comm.deadline ? `<span class="text-[10px] text-amber-400/90 font-mono block mt-1">Límite: ${comm.deadline}</span>` : ''}
+          </td>
+          <td class="p-3.5">${statusBadge}</td>
+          <td class="p-3.5 text-right whitespace-nowrap">
+            <button onclick="toggleCommStatus('${comm.id}')" title="Cambiar estado" class="p-1 hover:text-amber-400 text-slate-400 transition text-xs font-semibold mr-1">
+              🔄
+            </button>
+            <button onclick="deleteCommunication('${comm.id}')" title="Eliminar" class="p-1 hover:text-rose-400 text-slate-500 transition text-xs">
+              ✕
+            </button>
+          </td>
+        `;
+
+        tbody.appendChild(tr);
+      });
+    }
+
+    function renderActionsCards() {
+      const grid = document.getElementById('actionsCardsGrid');
+      grid.innerHTML = '';
+
+      if (technicalActions.length === 0) {
+        grid.innerHTML = `<div class="col-span-3 p-8 bg-slate-900 border border-slate-800 rounded-xl text-center text-xs text-slate-500">No hay actuaciones registradas.</div>`;
+        return;
+      }
+
+      technicalActions.forEach(act => {
+        const card = document.createElement('div');
+        card.className = `p-4 rounded-xl border flex flex-col justify-between space-y-3 transition ${
+          act.status === 'COMPLETADO' 
+            ? 'bg-slate-950/40 border-slate-800/60 opacity-60' 
+            : 'bg-slate-900 border-slate-800 hover:border-slate-700'
+        }`;
+
+        const isPending = act.status === 'PENDIENTE';
+        const priorityBadge = act.priority === 'ALTA'
+          ? 'bg-rose-500/20 text-rose-300 border-rose-500/30'
+          : 'bg-amber-500/20 text-amber-300 border-amber-500/30';
+
+        card.innerHTML = `
+          <div class="space-y-2">
+            <div class="flex items-center justify-between text-[10px]">
+              <span class="font-bold px-2 py-0.5 rounded border ${priorityBadge}">${act.priority}</span>
+              <span class="font-mono text-slate-400">${act.deadline ? 'Límite: ' + act.deadline : 'Sin fecha fija'}</span>
+            </div>
+
+            <h3 class="font-bold text-slate-100 text-xs leading-snug">${escapeHtml(act.title)}</h3>
+            <p class="text-[11px] text-slate-400">${escapeHtml(act.desc)}</p>
+
+            <div class="pt-2 border-t border-slate-800/80 flex items-center justify-between text-[11px] font-mono">
+              <span class="text-amber-400">📄 ${escapeHtml(act.doc || 'General')}</span>
+              <span class="text-slate-300">👤 ${escapeHtml(act.owner)}</span>
+            </div>
+          </div>
+
+          <div class="pt-2 border-t border-slate-800 flex items-center justify-between">
+            <span class="text-[10px] font-bold ${isPending ? 'text-rose-400' : 'text-emerald-400'}">
+              ${isPending ? '⏳ PENDIENTE' : '✓ COMPLETADO'}
+            </span>
+            <div class="flex items-center gap-2">
+              <button onclick="toggleActionStatus('${act.id}')" class="text-xs px-2.5 py-1 rounded font-semibold transition ${
+                isPending ? 'bg-emerald-600 hover:bg-emerald-500 text-white' : 'bg-slate-800 hover:bg-slate-700 text-slate-300'
+              }">
+                ${isPending ? 'Marcar Listo' : 'Reabrir'}
+              </button>
+              <button onclick="deleteAction('${act.id}')" class="text-slate-500 hover:text-rose-400 text-xs px-1.5 py-1">✕</button>
+            </div>
+          </div>
+        `;
+
+        grid.appendChild(card);
+      });
+    }
+
+    function openModalNewComm() {
+      document.getElementById('modalNewComm').classList.remove('hidden');
+    }
+    function closeModalNewComm() {
+      document.getElementById('modalNewComm').classList.add('hidden');
+    }
+
+    function openModalNewAction() {
+      document.getElementById('modalNewAction').classList.remove('hidden');
+    }
+    function closeModalNewAction() {
+      document.getElementById('modalNewAction').classList.add('hidden');
+    }
+
+    function handleSaveCommunication(e) {
+      e.preventDefault();
+      const docsVal = document.getElementById('commDocs').value;
+      const docsArray = docsVal ? docsVal.split(',').map(s => s.trim()).filter(Boolean) : [];
+
+      const newComm = {
+        id: 'COMM-' + Date.now(),
+        type: document.getElementById('commFlowType').value,
+        date: document.getElementById('commDate').value,
+        radMME: document.getElementById('commRadMME').value.trim(),
+        radSGC: document.getElementById('commRadSGC').value.trim(),
+        subject: document.getElementById('commSubject').value.trim(),
+        sender: document.getElementById('commSender').value.trim(),
+        receiver: document.getElementById('commReceiver').value.trim(),
+        docs: docsArray,
+        actionsReq: document.getElementById('commActionsReq').value.trim(),
+        deadline: document.getElementById('commDeadline').value,
+        status: document.getElementById('commStatus').value,
+        notes: ''
+      };
+
+      communications.unshift(newComm);
+
+      // If actions were specified, also create an automatic technical action item
+      if (newComm.actionsReq && newComm.status !== 'CERRADO') {
+        technicalActions.unshift({
+          id: 'ACT-' + Date.now(),
+          title: `Atender requerimiento: ${newComm.subject.substring(0, 50)}...`,
+          doc: docsArray.length > 0 ? docsArray[0] : 'Varios',
+          owner: 'Andrea Sánchez (OPR)',
+          deadline: newComm.deadline || '',
+          priority: 'ALTA',
+          status: 'PENDIENTE',
+          desc: newComm.actionsReq
+        });
+      }
+
+      saveState();
+      closeModalNewComm();
+      document.getElementById('formNewComm').reset();
+      showToast('Comunicación registrada con éxito', 'success');
+    }
+
+    function handleSaveAction(e) {
+      e.preventDefault();
+      const newAct = {
+        id: 'ACT-' + Date.now(),
+        title: document.getElementById('actionTitle').value.trim(),
+        doc: document.getElementById('actionDoc').value.trim(),
+        owner: document.getElementById('actionOwner').value,
+        deadline: document.getElementById('actionDeadline').value,
+        priority: document.getElementById('actionPriority').value,
+        status: 'PENDIENTE',
+        desc: document.getElementById('actionDesc').value.trim()
+      };
+
+      technicalActions.unshift(newAct);
+      saveState();
+      closeModalNewAction();
+      document.getElementById('formNewAction').reset();
+      showToast('Actuación técnica agregada', 'success');
+    }
+
+    function toggleCommStatus(id) {
+      const comm = communications.find(c => c.id === id);
+      if (comm) {
+        if (comm.status === 'PENDIENTE') comm.status = 'EN_TRAMITE';
+        else if (comm.status === 'EN_TRAMITE') comm.status = 'CERRADO';
+        else comm.status = 'PENDIENTE';
+        saveState();
+        showToast('Estado de comunicación actualizado', 'info');
+      }
+    }
+
+    function deleteCommunication(id) {
+      communications = communications.filter(c => c.id !== id);
+      saveState();
+      showToast('Comunicación eliminada', 'info');
+    }
+
+    function toggleActionStatus(id) {
+      const act = technicalActions.find(a => a.id === id);
+      if (act) {
+        act.status = act.status === 'PENDIENTE' ? 'COMPLETADO' : 'PENDIENTE';
+        saveState();
+        showToast(`Actuación marcada como ${act.status}`, 'info');
+      }
+    }
+
+    function markActionCompleted(id) {
+      const act = technicalActions.find(a => a.id === id);
+      if (act) {
+        act.status = 'COMPLETADO';
+        saveState();
+        showToast('Actuación completada con éxito', 'success');
+      }
+    }
+
+    function deleteAction(id) {
+      technicalActions = technicalActions.filter(a => a.id !== id);
+      saveState();
+      showToast('Actuación eliminada', 'info');
+    }
+
+    let currentAnalysisCache = null;
+    let currentAIMode = 'analyze'; // 'analyze' | 'draft' | 'consult'
+
+    function setAIMode(mode) {
+      currentAIMode = mode;
+      const modes = ['analyze', 'draft', 'consult'];
+      modes.forEach(m => {
+        const btn = document.getElementById(`aiModeBtn-${m}`);
+        if (btn) {
+          if (m === mode) {
+            btn.className = 'px-3 py-1.5 rounded-lg text-xs font-semibold bg-amber-500/20 text-amber-300 border border-amber-500/30 transition';
+          } else {
+            btn.className = 'px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-800 text-slate-300 hover:text-white transition';
+          }
+        }
+      });
+
+      const label = document.getElementById('aiInputLabel');
+      const btnText = document.getElementById('aiButtonText');
+      const presets = document.getElementById('presetButtonsGroup');
+      const textarea = document.getElementById('analyzerInputText');
+
+      if (mode === 'analyze') {
+        label.textContent = 'Texto, Asunto o Comunicado para Análisis y Extracción de Actuaciones:';
+        btnText.textContent = 'Ejecutar Análisis con Gemini AI';
+        presets.classList.remove('hidden');
+        textarea.placeholder = 'Pega el texto de la comunicación recibida o radicada...';
+      } else if (mode === 'draft') {
+        label.textContent = 'Indica el radicado, asunto o puntos que debe contener el oficio de respuesta para el MME:';
+        btnText.textContent = 'Redactar Oficio Oficial con Gemini AI';
+        presets.classList.remove('hidden');
+        textarea.placeholder = 'Ejemplo: Responder al radicado MME 1-2026-040542 sobre las fuentes de calibración Sr-90 y Am-241, indicando que se tomó nota, se suspendió la puesta en servicio y se actualizará IN-TNU-MRN-011...';
+      } else {
+        label.textContent = 'Pregunta u Operación a Consultar sobre el marco normativo IAN-R1:';
+        btnText.textContent = 'Consultar al Evaluador con Gemini AI';
+        presets.classList.add('hidden');
+        textarea.placeholder = 'Ejemplo: ¿Qué pasos normativos exige la Res. 18-1475 si se requiere reemplazar temporalmente al OPR de la instalación?';
+      }
+    }
+
+    function loadAnalyzerPreset(type) {
+      const textarea = document.getElementById('analyzerInputText');
+      if (type === 'aerosoles') {
+        textarea.value = `Se remite comunicación informando la devolución al proveedor de las fuentes exentas de calibración Sr-90 (BH-1222) y Am-241 (BH-1221) del detector de aerosoles por incompatibilidad geométrica. Se suspende la calibración y puesta en servicio del equipo hasta recibir las nuevas fuentes compatibles y se actualizarán los procedimientos IN-TNU-MRN-011 y formatos F-TNU-MRN-060 y 063.`;
+      } else if (type === 'acceso') {
+        textarea.value = `Se envía instructivo de control de acceso IN-TNU-MRN-016 versión 09 con la implementación del registro digital QR para visitantes, articulación con el formato F-TNU-MRN-067 y los cuatro niveles de acceso biométrico a zonas supervisadas y controladas.`;
+      } else if (type === 'personal') {
+        textarea.value = `Modificación de la Licencia LO-MME-013-2025-M1 a M2 por retiro de Oscar Sierra y Martha Guzmán como OPR para garantizar independencia funcional con el laboratorio LAAN, y retiro definitivo del físico Jesús Antonio Chala de mantenimiento.`;
+      }
+    }
+
+    // Call Gemini API with exponential backoff
+    async function callGeminiAPI(payload, retries = 3, delay = 1000) {
+      try {
+        const response = await fetch(GEMINI_API_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+
+        if (!response.ok) {
+          if (response.status === 429 && retries > 0) {
+            await new Promise(r => setTimeout(r, delay));
+            return callGeminiAPI(payload, retries - 1, delay * 2);
+          }
+          throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+
+        const data = await response.json();
+        return data;
+      } catch (err) {
+        if (retries > 0) {
+          await new Promise(r => setTimeout(r, delay));
+          return callGeminiAPI(payload, retries - 1, delay * 2);
+        }
+        throw err;
+      }
+    }
+
+    async function executeAITask() {
+      const text = document.getElementById('analyzerInputText').value.trim();
+      if (!text) {
+        showToast('Por favor ingresa un texto o consulta para procesar', 'warning');
+        return;
+      }
+
+      const loadingEl = document.getElementById('aiLoadingIndicator');
+      const resultsEl = document.getElementById('analyzerResultsContainer');
+      const draftEl = document.getElementById('aiDraftContainer');
+      const consultEl = document.getElementById('aiConsultContainer');
+      const btn = document.getElementById('btnExecuteAI');
+
+      loadingEl.classList.remove('hidden');
+      resultsEl.classList.add('hidden');
+      draftEl.classList.add('hidden');
+      consultEl.classList.add('hidden');
+      btn.disabled = true;
+
+      try {
+        if (currentAIMode === 'analyze') {
+          await runGeminiStructuredAnalysis(text);
+        } else if (currentAIMode === 'draft') {
+          await runGeminiOfficialDraft(text);
+        } else {
+          await runGeminiConsultation(text);
+        }
+      } catch (error) {
+        // Fallback to local rule engine if offline or throttled
+        showToast('Falla en conexión remota: Ejecutando evaluador nuclear local.', 'warning');
+        runAutoAnalysis();
+      } finally {
+        loadingEl.classList.add('hidden');
+        btn.disabled = false;
+      }
+    }
+
+    async function runGeminiStructuredAnalysis(text) {
+      const payload = {
+        contents: [
+          {
+            role: "user",
+            parts: [
+              {
+                text: `Analiza la siguiente comunicación o situación operativa del Reactor Nuclear IAN-R1:\n"${text}"\n\nGenera el diagnóstico regulatorio indicando estado de cumplimiento, sustento legal específico, impacto en la licencia y lista de actuaciones obligatorias.`
+              }
+            ]
+          }
+        ],
+        systemInstruction: {
+          parts: [{ text: GEMINI_SYSTEM_INSTRUCTION }]
+        },
+        generationConfig: {
+          responseMimeType: "application/json",
+          responseSchema: {
+            type: "OBJECT",
+            properties: {
+              estadoCumplimiento: { type: "STRING" },
+              sustentoLegal: {
+                type: "ARRAY",
+                items: { type: "STRING" }
+              },
+              impactoLicencia: { type: "STRING" },
+              actuacionesObligatorias: {
+                type: "ARRAY",
+                items: { type: "STRING" }
+              },
+              documentosAfectados: {
+                type: "ARRAY",
+                items: { type: "STRING" }
+              },
+              plazoSugeridoDias: { type: "NUMBER" },
+              resumenEjecutivo: { type: "STRING" }
+            },
+            required: ["estadoCumplimiento", "sustentoLegal", "impactoLicencia", "actuacionesObligatorias"]
+          }
+        }
+      };
+
+      const result = await callGeminiAPI(payload);
+      const jsonText = result?.candidates?.[0]?.content?.parts?.[0]?.text;
+      if (!jsonText) throw new Error("Respuesta vacía de Gemini");
+
+      const data = JSON.parse(jsonText);
+      renderStructuredAnalysis(data, text);
+      showToast('Análisis generado exitosamente con Gemini AI', 'success');
+    }
+
+    function renderStructuredAnalysis(data, originalText) {
+      const container = document.getElementById('analyzerResultsContainer');
+      container.classList.remove('hidden');
+
+      // Compliance Tag
+      const compTag = document.getElementById('analyzerComplianceTag');
+      compTag.textContent = data.estadoCumplimiento || 'Cumple';
+      if ((data.estadoCumplimiento || '').toLowerCase().includes('no')) {
+        compTag.className = 'text-xs font-bold px-3 py-1 rounded-full bg-rose-500/20 text-rose-300 border border-rose-500/30';
+      } else if ((data.estadoCumplimiento || '').toLowerCase().includes('autoriz') || (data.estadoCumplimiento || '').toLowerCase().includes('condic')) {
+        compTag.className = 'text-xs font-bold px-3 py-1 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/30';
+      } else {
+        compTag.className = 'text-xs font-bold px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30';
+      }
+
+      // Legal Basis
+      const normListEl = document.getElementById('analyzerNormList');
+      normListEl.innerHTML = (data.sustentoLegal || []).map(norm => `
+        <div class="p-2 bg-slate-950/70 rounded-lg border border-slate-800 font-mono text-[11px] text-slate-200">
+          ⚖️ ${escapeHtml(norm)}
+        </div>
+      `).join('');
+
+      // License Impact
+      document.getElementById('analyzerLicenseImpact').textContent = data.impactoLicencia || 'No requiere modificación de la Licencia LO-MME-013-2025-M2.';
+
+      // Actions List
+      const actionsListEl = document.getElementById('analyzerActionsList');
+      actionsListEl.innerHTML = (data.actuacionesObligatorias || []).map(act => `
+        <li class="leading-relaxed"><strong class="text-slate-100">${escapeHtml(act)}</strong></li>
+      `).join('');
+      document.getElementById('analyzerActionsCount').textContent = `${(data.actuacionesObligatorias || []).length} detectadas`;
+
+      // Save cache for modal conversion or drafting
+      currentAnalysisCache = {
+        subject: data.resumenEjecutivo || (originalText.substring(0, 90) + '...'),
+        actionsReq: (data.actuacionesObligatorias || []).join('\n• '),
+        docs: data.documentosAfectados || [],
+        deadlineDays: data.plazoSugeridoDias || 30
+      };
+    }
+
+    async function runGeminiOfficialDraft(instructionText) {
+      const payload = {
+        contents: [
+          {
+            role: "user",
+            parts: [
+              {
+                text: `Redacta un oficio oficial formal de respuesta regulatoria del Servicio Geológico Colombiano (SGC) dirigido al Ingeniero Juan Pablo Parra Lozano (Grupo de Asuntos Nucleares, Ministerio de Minas y Energía).
+Contexto y puntos requeridos:
+${instructionText}
+
+Incluye encabezado formal con radicado de salida SGC y radicado MME de referencia, saludo protocolario, antecedentes, desarrollo técnico con los artículos pertinentes de la Res. 18-1475 y 18-1434, los compromisos de actualización y firmas de:
+- Elaboró: Andrea Sánchez Galindo (Oficial de Protección Radiológica OPR).
+- Revisó: Edgar Mauricio López (Supervisor y Coordinador Reactor Nuclear IAN-R1).
+- Aprobó / Titular: Jimmy Alejandro Muñoz Rocha (Director Técnico de Asuntos Nucleares SGC, Licencia LO-MME-013-2025-M2).`
+              }
+            ]
+          }
+        ],
+        systemInstruction: {
+          parts: [{ text: GEMINI_SYSTEM_INSTRUCTION }]
+        }
+      };
+
+      const result = await callGeminiAPI(payload);
+      const draftText = result?.candidates?.[0]?.content?.parts?.[0]?.text;
+      if (!draftText) throw new Error("No se pudo generar el borrador.");
+
+      const draftContainer = document.getElementById('aiDraftContainer');
+      draftContainer.classList.remove('hidden');
+      document.getElementById('aiDraftOutput').textContent = draftText;
+      showToast('Minuta oficial redactada por Gemini AI', 'success');
+    }
+
+    async function runGeminiConsultation(questionText) {
+      const payload = {
+        contents: [
+          {
+            role: "user",
+            parts: [
+              {
+                text: `Pregunta normativa del operador: "${questionText}".
+Responde con la estructura estricta:
+1. ESTADO DE CUMPLIMIENTO / RESPUESTA DIRECTA
+2. SUSTENTO LEGAL (Artículos específicos de Res. 18-1475, Res. 18-1434 o Licencia LO-MME-013-2025-M2)
+3. IMPACTO EN LICENCIA Y PROCEDIMIENTO TÉCNICO RECOMENDADO
+4. ALERTAS CRÍTICAS (Vigencia al 23-Jul-2030, anticipación de 6 meses y personal autorizado).`
+              }
+            ]
+          }
+        ],
+        systemInstruction: {
+          parts: [{ text: GEMINI_SYSTEM_INSTRUCTION }]
+        }
+      };
+
+      const result = await callGeminiAPI(payload);
+      const textOutput = result?.candidates?.[0]?.content?.parts?.[0]?.text;
+      if (!textOutput) throw new Error("Sin respuesta del modelo.");
+
+      const consultContainer = document.getElementById('aiConsultContainer');
+      consultContainer.classList.remove('hidden');
+      document.getElementById('aiConsultOutput').innerHTML = `<pre class="font-mono text-xs whitespace-pre-wrap leading-relaxed text-slate-200 select-text bg-slate-900 p-4 rounded-xl border border-slate-800">${escapeHtml(textOutput)}</pre>`;
+      showToast('Consulta resuelta con éxito', 'success');
+    }
+
+    function generateDraftFromCurrentAnalysis() {
+      if (!currentAnalysisCache) return;
+      setAIMode('draft');
+      document.getElementById('analyzerInputText').value = `Elaborar oficio de respuesta sobre el tema: "${currentAnalysisCache.subject}". Compromisos y actuaciones técnicas derivadas:\n${currentAnalysisCache.actionsReq}`;
+      executeAITask();
+    }
+
+    function copyDraftToClipboard() {
+      const text = document.getElementById('aiDraftOutput').textContent;
+      if (!text) return;
+
+      const textarea = document.createElement('textarea');
+      textarea.value = text;
+      textarea.style.position = 'fixed';
+      textarea.style.opacity = '0';
+      document.body.appendChild(textarea);
+      textarea.select();
+
+      try {
+        const successful = document.execCommand('copy');
+        if (successful) {
+          const btnText = document.getElementById('copyBtnText');
+          const btnIcon = document.getElementById('copyBtnIcon');
+          btnText.textContent = '¡Copiado!';
+          btnIcon.textContent = '✓';
+          setTimeout(() => {
+            btnText.textContent = 'Copiar Texto';
+            btnIcon.textContent = '📋';
+          }, 2000);
+          showToast('Minuta copiada al portapapeles', 'success');
+        } else {
+          showToast('No se pudo copiar automáticamente', 'warning');
+        }
+      } catch (err) {
+        showToast('Error al copiar el texto', 'error');
+      } finally {
+        document.body.removeChild(textarea);
+      }
+    }
+
+    async function autoAnalyzeWithGeminiFromModal() {
+      const subject = document.getElementById('commSubject').value.trim();
+      const docs = document.getElementById('commDocs').value.trim();
+      if (!subject) {
+        showToast('Ingresa al menos el asunto oficial para que la IA deduzca las tareas', 'warning');
+        return;
+      }
+
+      showToast('Analizando requerimientos con Gemini AI...', 'info');
+
+      try {
+        const payload = {
+          contents: [{
+            role: "user",
+            parts: [{
+              text: `En el marco regulatorio del reactor IAN-R1, para una comunicación con Asunto: "${subject}" y Documentos: "${docs}", especifica en viñetas cortas las actuaciones técnicas inmediatas que debe realizar la instalación y sugiere el número de días para la fecha límite.`
+            }]
+          }],
+          systemInstruction: { parts: [{ text: GEMINI_SYSTEM_INSTRUCTION }] },
+          generationConfig: {
+            responseMimeType: "application/json",
+            responseSchema: {
+              type: "OBJECT",
+              properties: {
+                actuaciones: { type: "ARRAY", items: { type: "STRING" } },
+                diasLimite: { type: "NUMBER" }
+              },
+              required: ["actuaciones"]
+            }
+          }
+        };
+
+        const res = await callGeminiAPI(payload);
+        const parsed = JSON.parse(res.candidates[0].content.parts[0].text);
+        if (parsed.actuaciones && parsed.actuaciones.length > 0) {
+          document.getElementById('commActionsReq').value = parsed.actuaciones.map(a => `• ${a}`).join('\n');
+          if (parsed.diasLimite) {
+            const targetDate = new Date();
+            targetDate.setDate(targetDate.getDate() + parsed.diasLimite);
+            document.getElementById('commDeadline').value = targetDate.toISOString().split('T')[0];
+          }
+          showToast('Actuaciones autocompletadas con éxito por Gemini', 'success');
+        }
+      } catch (e) {
+        showToast('No se pudo autocompletar con IA en este momento', 'warning');
+      }
+    }
+
+    function runAutoAnalysis() {
+      const text = document.getElementById('analyzerInputText').value.trim();
+      if (!text) {
+        showToast('Por favor ingresa un texto para analizar', 'warning');
+        return;
+      }
+
+      const lower = text.toLowerCase();
+      const norms = [];
+      const actions = [];
+      let licenseImpact = 'No altera las bases de diseño de la Licencia LO-MME-013-2025-M2. Se maneja por vía de actualización documental y reporte regulatorio (Res. 18-1475, Art. 39).';
+      let compliance = 'Cumple (Sujeto a reporte)';
+
+      // Pattern matching for nuclear domain
+      if (lower.includes('aerosol') || lower.includes('fuente') || lower.includes('calibrac') || lower.includes('sr-90') || lower.includes('am-241')) {
+        norms.push('Res. 18-1475 de 2004: Art. 39 (Documentación actualizada), Art. 41 (Mantenimiento y verificaciones)');
+        norms.push('Res. 18-1434 de 2002: Art. 28 (Fuentes exentas), Art. 49 y 50 (Calibración metrológica previa a uso)');
+        actions.push('Mantener suspendida la operatividad del detector de aerosoles hasta contar con fuentes compatibles.');
+        actions.push('Recibir formalmente los nuevos patrones de Sr-90 y Am-241.');
+        actions.push('Realizar calibración in situ y emitir certificados trazables.');
+        actions.push('Estandarizar instructivo IN-TNU-MRN-011 y programas F-TNU-MRN-060 y F-TNU-MRN-063.');
+        actions.push('Remitir dossier con certificados y procedimientos vigentes al MME.');
+      }
+
+      if (lower.includes('acceso') || lower.includes('qr') || lower.includes('biométric') || lower.includes('visita') || lower.includes('016')) {
+        norms.push('Res. 18-1475 de 2004: Art. 22 (Registros libro ingreso/egreso), Art. 29 Num. 7 (Manual Protección Física), Art. 39');
+        norms.push('Res. 18-1434 de 2002: Art. 22 (Optimización), Art. 105 Num. 1 y 2, Art. 151 (Control de visitantes en zonas)');
+        norms.push('Licencia LO-MME-013-2025-M2: Título II (Revisión integrada de seguridad física y radiológica)');
+        actions.push('Verificar articulación del registro QR con la impresión y archivo periódico del formato físico F-TNU-MRN-067.');
+        actions.push('Mantener actualizados los niveles biométricos (Nivel 1 al 4) y la autorización por parte del OPR.');
+        actions.push('Garantizar que todo visitante cuente con dosimetría de lectura directa y acompañamiento permanente de TOE.');
+      }
+
+      if (lower.includes('informe') || lower.includes('semestral') || lower.includes('anual')) {
+        norms.push('Res. 18-1475 de 2004: Art. 21 (Informes semestrales en Feb/Ago; Informe anual en primeros 15 días hábiles de Enero)');
+        norms.push('Licencia LO-MME-013-2025-M2: Título II (Evidencias de Comité de Seguridad y Gestión del Envejecimiento)');
+        actions.push('Consolidar historial dosimétrico individual mensual y actas del Comité de Seguridad.');
+        actions.push('Incorporar resultados del programa de gestión del envejecimiento en sistemas e instrumentación.');
+        actions.push('Radicar formalmente ante el Grupo de Asuntos Nucleares del MME dentro del plazo normativo.');
+      }
+
+      if (norms.length === 0) {
+        norms.push('Res. 18-1475 de 2004: Art. 4 (Responsabilidad del Titular), Art. 39 (Documentación actualizada)');
+        actions.push('Revisar si involucra cambios en componentes de seguridad nuclear o protección física.');
+        actions.push('Mantener el soporte correspondiente en el archivo regulatorio de la instalación.');
+      }
+
+      // Display results
+      const container = document.getElementById('analyzerResultsContainer');
+      container.classList.remove('hidden');
+
+      const normListEl = document.getElementById('analyzerNormList');
+      normListEl.innerHTML = norms.map(n => `<div class="p-1.5 bg-slate-900 rounded border border-slate-800">📌 ${escapeHtml(n)}</div>`).join('');
+
+      document.getElementById('analyzerLicenseImpact').textContent = licenseImpact;
+
+      const actListEl = document.getElementById('analyzerActionsList');
+      actListEl.innerHTML = actions.map(a => `<li>${escapeHtml(a)}</li>`).join('');
+
+      currentAnalysisCache = {
+        subject: text.substring(0, 80) + '...',
+        actionsReq: actions.join('\n• '),
+        norms: norms
+      };
+
+      showToast('Análisis normativo generado con éxito', 'success');
+    }
+
+    function convertAnalysisToCommunication() {
+      if (!currentAnalysisCache) return;
+      openModalNewComm();
+      document.getElementById('commSubject').value = currentAnalysisCache.subject;
+      document.getElementById('commActionsReq').value = '• ' + currentAnalysisCache.actionsReq;
+      document.getElementById('commStatus').value = 'PENDIENTE';
+    }
+
+    function exportDataJSON() {
+      const data = {
+        app: 'IAN-R1 Regulatory System',
+        timestamp: new Date().toISOString(),
+        communications,
+        technicalActions
+      };
+      const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `IAN-R1_Historico_Regulatorio_${new Date().toISOString().split('T')[0]}.json`;
+      a.click();
+      URL.revokeObjectURL(url);
+      showToast('Respaldo JSON descargado correctamente', 'success');
+    }
+
+    function importDataJSON(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        try {
+          const parsed = JSON.parse(e.target.result);
+          if (parsed.communications && Array.isArray(parsed.communications)) {
+            communications = parsed.communications;
+          }
+          if (parsed.technicalActions && Array.isArray(parsed.technicalActions)) {
+            technicalActions = parsed.technicalActions;
+          }
+          saveState();
+          showToast('Datos restaurados correctamente', 'success');
+        } catch (err) {
+          showToast('Error al leer el archivo JSON: Formato no válido', 'error');
+        }
+      };
+      reader.readAsText(file);
+      event.target.value = '';
+    }
+
+    // Helper: Toast Notifications
+    function showToast(message, type = 'info') {
+      const container = document.getElementById('toastContainer');
+      const toast = document.createElement('div');
+      
+      let borderCol = 'border-amber-500/50 bg-slate-900 text-amber-300';
+      if (type === 'success') borderCol = 'border-emerald-500/50 bg-slate-900 text-emerald-300';
+      if (type === 'error') borderCol = 'border-rose-500/50 bg-slate-900 text-rose-300';
+      if (type === 'warning') borderCol = 'border-yellow-500/50 bg-slate-900 text-yellow-300';
+
+      toast.className = `p-3 rounded-xl border text-xs shadow-2xl flex items-center gap-2 pointer-events-auto transition duration-300 transform translate-y-2 opacity-0 ${borderCol}`;
+      toast.innerHTML = `<span>⚡</span> <span>${escapeHtml(message)}</span>`;
+
+      container.appendChild(toast);
+
+      requestAnimationFrame(() => {
+        toast.classList.remove('translate-y-2', 'opacity-0');
+      });
+
+      setTimeout(() => {
+        toast.classList.add('opacity-0', 'translate-y-2');
+        setTimeout(() => toast.remove(), 300);
+      }, 3500);
+    }
+
+    function escapeHtml(str) {
+      if (!str) return '';
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+    }
+
+    // Bootstrap app on window load
+    window.onload = function() {
+      initApp();
+    };
+  </script>
+</body>
+</html>
