@@ -1,0 +1,7 @@
+{
+  "name": "Sistema de Gestión y Control Regulatorio - Reactor IAN-R1",
+  "description": "Control de comunicaciones y compromisos regulatorios para el Reactor Nuclear de Investigación IAN-R1 con evaluador y redactor asistido.",
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}

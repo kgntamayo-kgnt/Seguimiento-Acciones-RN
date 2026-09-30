@@ -4,6 +4,9 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Sistema de Gestión y Control Regulatorio - Reactor IAN-R1</title>
+  <meta name="description" content="Control de comunicaciones y compromisos regulatorios para el Reactor Nuclear de Investigación IAN-R1 con evaluador y redactor asistido.">
+  <meta property="og:title" content="Sistema de Gestión y Control Regulatorio - Reactor IAN-R1">
+  <meta property="og:description" content="Control de comunicaciones y compromisos regulatorios para el Reactor Nuclear de Investigación IAN-R1 con evaluador y redactor asistido.">
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -768,9 +771,8 @@ REGLAS OBLIGATORIAS:
 - Recordar que la renovación o modificación mayor debe radicarse con 6 meses de anticipación.
 - La vigencia de la licencia concluye el 23 de julio de 2030.`;
 
-    // Empty API key as required (Canvas runtime injection)
-    const apiKey = "";
-    const GEMINI_API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${apiKey}`;
+    // Backend proxy endpoint for Gemini API
+    const GEMINI_API_URL = '/api/gemini';
 
     // Seed Data based on real records
     const initialCommunications = [
